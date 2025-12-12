@@ -4,7 +4,13 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const connectDB = require('./config/db');
-const authRoutes = require('./views/authRoutes');
+
+// arnab routes
+const authRoutes = require('./routes/authRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
+
+// ######### end of arnab routes #########
+
 
 const app = express();
 connectDB();
@@ -12,8 +18,9 @@ connectDB();
 app.use(cors());
 app.use(bodyParser.json());
 
-// API mount
+// Arnab api mounts
 app.use('/api/auth', authRoutes);
+app.use('/api/r1', bookingRoutes);
 
 // basic root
 app.get('/', (req, res) => res.json({ success: true, message: 'RideSharing API' }));
