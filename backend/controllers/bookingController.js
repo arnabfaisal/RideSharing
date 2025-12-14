@@ -18,7 +18,6 @@ const SIZE_MULT = {
 
 
 
-
 exports.placesAutocomplete = async (req, res) => {
     try {
         const {q} = req.query || "";
@@ -79,7 +78,7 @@ exports.estimateFare = (req, res) => {
             data: {
                 distanceKm: Math.round(km * 100) / 100,
                 estimatedFare: fare,
-                currency: 'USD',
+                currency: 'TAKA',
                 breakdown: {
                 serviceType,
                 base: serviceType === 'ride' ? RIDE_BASE : ITEM_BASE,
@@ -109,8 +108,19 @@ exports.createBooking = async (req, res) => {
     if (serviceType === 'ride') estimatedFare = estimateRideFare(km, !!carpool);
     else estimatedFare = estimateItemFare(km, itemSize || 'small');
 
+    console.log('Creating booking for user:', req.user);
+
+    if(!req.user){
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required to create booking",
+
+      })
+    }
+
     const booking = await Booking.create({
-      user: req.user ? req.user._id : null, // will be set when you integrate auth protect middleware
+      user: req.user._id,
+      //user: req.user ? req.user._id : null, // will be set when you integrate auth protect middleware
       serviceType,
       pickup,
       destination,
