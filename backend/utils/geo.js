@@ -12,4 +12,17 @@ function haversineDistanceKm(lat1, lon1, lat2, lon2) {
     return R * c;
 }
 
-module.exports = { haversineDistanceKm };
+function bearingDegrees(lat1, lon1, lat2, lon2) {
+    const toRad = (v) => (v * Math.PI) / 180;
+    const toDeg = (v) => (v * 180) / Math.PI;
+    const φ1 = toRad(lat1);
+    const φ2 = toRad(lat2);
+    const Δλ = toRad(lon2 - lon1);
+    const y = Math.sin(Δλ) * Math.cos(φ2);
+    const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+    const θ = Math.atan2(y, x);
+    const brng = (toDeg(θ) + 360) % 360;
+    return brng;
+}
+
+module.exports = { haversineDistanceKm, bearingDegrees };

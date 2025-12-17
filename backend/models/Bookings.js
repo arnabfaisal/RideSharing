@@ -14,6 +14,8 @@ const bookingSchema = new mongoose.Schema({
   pickup: { type: locSchema, required: true },
   destination: { type: locSchema, required: function() { return this.serviceType === 'ride'; } }, // item send might have only pickup or both; keep required for simplicity
   carpool: { type: Boolean, default: false },
+  carpoolGroup: { type: mongoose.Schema.Types.ObjectId, ref: 'CarpoolGroup', default: null },
+  passengerFare: { type: Number, default: null },
   // Item specific
   itemDescription: { type: String, default: '' },
   itemSize: { type: String, enum: ['small','medium','large'], default: 'small' },
