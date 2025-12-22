@@ -1,6 +1,7 @@
 const { autocomplete } = require('../utils/mapService');
 const Booking = require('../models/Bookings');
 const { haversineDistanceKm } = require('../utils/geo');
+const carpoolService = require('../services/carpoolService');
 
 
 
@@ -130,7 +131,17 @@ exports.createBooking = async (req, res) => {
       estimatedFare
     });
 
-    res.status(201).json({ success: true, data: booking });
+    // If carpool requested, attempt to form a group
+    let group = null;
+    try {
+      if (booking.carpool) {
+        group = await carpoolService.attemptGroup(booking);
+      }
+    } catch (e) {
+      console.error('carpool attempt failed:', e);
+    }
+
+    res.status(201).json({ success: true, data: booking, carpoolGroup: group });
   } catch (err) {
     console.error('create booking error', err);
     res.status(500).json({ success: false, message: 'Booking failed', error: err.message });
