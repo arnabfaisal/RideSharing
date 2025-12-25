@@ -10,6 +10,10 @@ import Dashboard from './pages/Dashboard';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 
+import ServiceSelection from './pages/booking/ServiceSelection';
+import RideBooking from './pages/booking/RideBooking';
+import ItemSendBooking from './pages/booking/ItemSendBooking';
+
 // Placeholder Dashboard
 function DashboardPage() {
   return (
@@ -38,7 +42,7 @@ export default function App() {
         {/* Protected Routes */}
         <Route path="/dashboard" element={
           <ProtectedRoute>
-            <DashboardPage />
+            <Dashboard />
           </ProtectedRoute>
         } />
         <Route path="/profile" element={
@@ -46,6 +50,21 @@ export default function App() {
             <Profile />
           </ProtectedRoute>
         } />
+
+
+        {/* r1 */}
+        <Route path="/booking" element={<ServiceSelection />} />
+        <Route path="/booking/ride" element={
+          <ProtectedRoute>
+            <RideBooking />
+          </ProtectedRoute>
+        } />
+        <Route path="/booking/item" element={
+          <ProtectedRoute>
+            <ItemSendBooking />
+          </ProtectedRoute>
+        } />
+        
         
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

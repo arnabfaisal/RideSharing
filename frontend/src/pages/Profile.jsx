@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { get } from '../services/api';
 import Card from '../components/ui/Card';
@@ -174,15 +174,21 @@ export default function Profile() {
             <Card>
               <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
               <div className="space-y-3">
-                <Button variant="primary" className="w-full" onClick={() => navigate('/book-ride')}>
-                  Book a Ride
-                </Button>
-                <Button variant="secondary" className="w-full" onClick={() => navigate('/send-item')}>
-                  Send an Item
-                </Button>
-                <Button variant="outline" className="w-full" onClick={() => navigate('/dashboard')}>
-                  Go to Dashboard
-                </Button>
+                <Link to="/booking/ride">
+                  <Button variant="primary" className="w-full">
+                    Book a Ride
+                  </Button>
+                </Link>
+                <Link to="/booking/item">
+                  <Button variant="secondary" className="w-full">
+                    Send an Item
+                  </Button>
+                </Link>
+                <Link to="/dashboard">
+                  <Button variant="outline" className="w-full">
+                    Go to Dashboard
+                  </Button>
+                </Link>
               </div>
             </Card>
           </div>
