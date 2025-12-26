@@ -3,13 +3,13 @@ const express = require('express');
 const router = express.Router();
 const bookingCtrl = require('../controllers/bookingController');
 const carpoolCtrl = require('../controllers/carpoolController');
-const { requireDriverRole } = require('../middlewares/roleCheck');
+const { requireDriverRole } = require('../middleware/roleCheck');
 
 
 // middleware so that only authenticated users can access booking routes 
 
 
-const { protect } = require('../middlewares/auth');
+const { protect } = require('../middleware/auth');
 router.use(protect);
 
 // Public (or protect with auth middleware later)
