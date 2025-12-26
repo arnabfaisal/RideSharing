@@ -8,13 +8,16 @@ const { requireDriverRole } = require('../middlewares/roleCheck');
 
 // middleware so that only authenticated users can access booking routes 
 
+router.get('/places/autocomplete', bookingCtrl.placesAutocomplete);
+router.post('/fare/estimate', bookingCtrl.estimateFare);
+
+
 
 const { protect } = require('../middlewares/auth');
 router.use(protect);
 
 // Public (or protect with auth middleware later)
-router.get('/places/autocomplete', bookingCtrl.placesAutocomplete);
-router.post('/fare/estimate', bookingCtrl.estimateFare);
+
 router.post('/bookings', bookingCtrl.createBooking);
 router.get('/bookings/:id', bookingCtrl.getBooking);
 

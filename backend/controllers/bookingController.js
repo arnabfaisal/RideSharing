@@ -74,6 +74,20 @@ exports.estimateFare = (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid serviceType' });
             }
 
+            console.log('estimate fare:',
+              {
+                distanceKm: Math.round(km * 100) / 100,
+                estimatedFare: fare,
+                currency: 'TAKA',
+                breakdown: {
+                serviceType,
+                base: serviceType === 'ride' ? RIDE_BASE : ITEM_BASE,
+                perKm: serviceType === 'ride' ? RIDE_PER_KM : ITEM_PER_KM,
+                carpool: !!carpool,
+                itemSize: itemSize || null
+                }
+            })
+
             res.json({
             success: true,
             data: {
@@ -88,6 +102,7 @@ exports.estimateFare = (req, res) => {
                 itemSize: itemSize || null
                 }
             }
+
             });
     } catch (err) {
         console.error('estimate fare error', err);
