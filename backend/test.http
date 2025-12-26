@@ -1,0 +1,18 @@
+POST http://localhost:5000/api/trips/test
+Content-Type: application/json
+
+{
+  "driver": "694dc18213e84077b2aba841",
+  "passenger": "694dc07913e84077b2aba837",
+  "tripType": "RIDE",
+  "fareAmount": 120
+}
+
+### Passenger Confirms Trip
+POST http://localhost:5000/api/trips/694dc49d13e84077b2aba85b/confirm/passenger
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NGRjMDc5MTNlODQwNzdiMmFiYTgzNyIsImlhdCI6MTc2NjcwMzM3OCwiZXhwIjoxNzY2NzEwNTc4fQ.XuJY4zeQhX1IShL1j1W2DjLMfASxqFMsLP1rKDA-ck0
+
+
+### Driver Confirms Trip
+POST http://localhost:5000/api/trips/694dc49d13e84077b2aba85b/confirm/driver
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NGRjMTgyMTNlODQwNzdiMmFiYTg0MSIsImlhdCI6MTc2NjcwMzUxNSwiZXhwIjoxNzY2NzEwNzE1fQ.lVFDREIO3XrprNt8ANz_CICfdc8m7r-GUeXDBooMUbk
