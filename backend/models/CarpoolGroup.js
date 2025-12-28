@@ -6,6 +6,12 @@ const carpoolSchema = new mongoose.Schema({
   destinationCentroid: { lat: Number, lon: Number },
   totalFare: { type: Number, default: 0 },
   splitFares: { type: Map, of: Number, default: {} },
+  liveLocation: { lat: Number, lon: Number, updatedAt: Date },
+  ratings: [{
+    passenger: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    rating: { type: Number },
+    createdAt: { type: Date, default: Date.now }
+  }],
   status: { type: String, enum: ['open','driver_accepted','in_progress','completed','cancelled'], default: 'open' },
   driver: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   notified: { type: Boolean, default: false },
