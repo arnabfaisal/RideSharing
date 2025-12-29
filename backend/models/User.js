@@ -14,12 +14,17 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   roles: {
     driver: { type: Boolean, default: false },
-    passenger: { type: Boolean, default: true }
+    passenger: { type: Boolean, default: true },
+    admin: { type: Boolean, default: false } 
   },
   vehicle: { type: vehicleSchema, default: null },
-  rating: { type: Number, default: 5.0 },
+  rating: { type: Number, default: 0 },
   ratingCount: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
+  isSuspended: { type: Boolean, default: false },
+  suspendedUntil: { type: Date, default: null },
+  isBanned: { type: Boolean, default: false }
+
 }, { toJSON: { virtuals: true } });
 
 // Password hashing

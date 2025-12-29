@@ -1,18 +1,482 @@
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Mejba",
+  "email": "mejba@university.edu",
+  "password": "12345",
+  "roles": "passenger"
+}
+
+
+###
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Nayem",
+  "email": "nayem@university.edu",
+  "password": "d1234",
+  "roles": "driver",
+  "vehicle": {
+    "type": "Car",
+    "plate": "DHA-4321"
+  }
+}
+
+
+###
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Admin User",
+  "email": "admin@university.edu",
+  "password": "Admin123!"
+}
+
+
+###
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@university.edu",
+  "password": "Admin123!"
+}
+###
 POST http://localhost:5000/api/trips/test
 Content-Type: application/json
 
 {
-  "driver": "694dc18213e84077b2aba841",
-  "passenger": "694dc07913e84077b2aba837",
+  "driver": "69503b8494408c971f3b3d8a",
+  "passenger": "69503b2994408c971f3b3d87",
   "tripType": "RIDE",
-  "fareAmount": 120
+  "fareAmount": 1200
 }
 
-### Passenger Confirms Trip
-POST http://localhost:5000/api/trips/694dc49d13e84077b2aba85b/confirm/passenger
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NGRjMDc5MTNlODQwNzdiMmFiYTgzNyIsImlhdCI6MTc2NjcwMzM3OCwiZXhwIjoxNzY2NzEwNTc4fQ.XuJY4zeQhX1IShL1j1W2DjLMfASxqFMsLP1rKDA-ck0
+###
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "mejba@university.edu",
+  "password": "12345"
+}
 
 
-### Driver Confirms Trip
-POST http://localhost:5000/api/trips/694dc49d13e84077b2aba85b/confirm/driver
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NGRjMTgyMTNlODQwNzdiMmFiYTg0MSIsImlhdCI6MTc2NjcwMzUxNSwiZXhwIjoxNzY2NzEwNzE1fQ.lVFDREIO3XrprNt8ANz_CICfdc8m7r-GUeXDBooMUbk
+###
+POST http://localhost:5000/api/trips/695042e794408c971f3b3d99/confirm/passenger
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTAzYjI5OTQ0MDhjOTcxZjNiM2Q4NyIsImlhdCI6MTc2Njg2ODAxNCwiZXhwIjoxNzY2ODc1MjE0fQ.72Y277_znt-iZZRnsTLJ1ab8GhUn8grZnZeVdjz4AFo
+
+
+###
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "nayem@university.edu",
+  "password": "d1234"
+}
+
+
+
+###
+POST http://localhost:5000/api/trips/695042e794408c971f3b3d99/confirm/driver
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTAzYjg0OTQ0MDhjOTcxZjNiM2Q4YSIsImlhdCI6MTc2Njg2ODUwMSwiZXhwIjoxNzY2ODc1NzAxfQ.VjXxk5z5bb8ANOvhbgAca0_lrExvBZwy4OVA5TXIAdc
+
+###
+POST http://localhost:5000/api/ratings
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTAzYjI5OTQ0MDhjOTcxZjNiM2Q4NyIsImlhdCI6MTc2Njg2ODAxNCwiZXhwIjoxNzY2ODc1MjE0fQ.72Y277_znt-iZZRnsTLJ1ab8GhUn8grZnZeVdjz4AFo
+
+{
+  "trip": "695042e794408c971f3b3d99",
+  "driver": "69503b8494408c971f3b3d8a",
+  "rating": 5,
+  "comment": "Very polite"
+}
+
+###
+POST http://localhost:5000/api/ratings/695042e794408c971f3b3d99
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTAzYjI5OTQ0MDhjOTcxZjNiM2Q4NyIsImlhdCI6MTc2Njg2ODAxNCwiZXhwIjoxNzY2ODc1MjE0fQ.72Y277_znt-iZZRnsTLJ1ab8GhUn8grZnZeVdjz4AFo
+Content-Type: application/json
+
+{
+  "stars": 5,
+  "comment": "Very polite"
+}
+
+
+###
+GET http://localhost:5000/api/ratings/driver/69503b8494408c971f3b3d8a/summary
+
+
+
+###
+GET http://localhost:5000/api/ratings/driver/my
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTAzYjg0OTQ0MDhjOTcxZjNiM2Q4YSIsImlhdCI6MTc2Njg2ODUwMSwiZXhwIjoxNzY2ODc1NzAxfQ.VjXxk5z5bb8ANOvhbgAca0_lrExvBZwy4OVA5TXIAdc
+
+###
+POST http://localhost:5000/api/ratings/69505839a76fd200105c673d/respond
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTAzYjg0OTQ0MDhjOTcxZjNiM2Q4YSIsImlhdCI6MTc2Njg2ODUwMSwiZXhwIjoxNzY2ODc1NzAxfQ.VjXxk5z5bb8ANOvhbgAca0_lrExvBZwy4OVA5TXIAdc
+Content-Type: application/json
+
+{
+  "response": "Thank you for riding with me!"
+}
+###
+POST http://localhost:5000/api/reports
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTAzYjI5OTQ0MDhjOTcxZjNiM2Q4NyIsImlhdCI6MTc2Njg2ODAxNCwiZXhwIjoxNzY2ODc1MjE0fQ.72Y277_znt-iZZRnsTLJ1ab8GhUn8grZnZeVdjz4AFo
+Content-Type: application/json
+
+{
+  "tripId": "695042e794408c971f3b3d99",
+  "category": "Late",
+  "description": "Driver arrived 20 minutes late"
+}
+
+###
+POST http://localhost:5000/api/trips/test
+Content-Type: application/json
+
+{
+  "driver": "69503b8494408c971f3b3d8a",
+  "passenger": "69503b2994408c971f3b3d87",
+  "tripType": "RIDE",
+  "fareAmount": 12
+}
+
+
+###
+POST http://localhost:5000/api/reports
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTAzYjI5OTQ0MDhjOTcxZjNiM2Q4NyIsImlhdCI6MTc2Njg2ODAxNCwiZXhwIjoxNzY2ODc1MjE0fQ.72Y277_znt-iZZRnsTLJ1ab8GhUn8grZnZeVdjz4AFo
+Content-Type: application/json
+
+{
+  "tripId": "69514428214ada754e24f8ba",
+  "category": "Late",
+  "description": "Driver arrived 20 minutes late"
+}
+
+###
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "mejba@university.edu",
+  "password": "12345"
+}
+
+
+###
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "nayem@university.edu",
+  "password": "d1234"
+}
+
+###
+POST http://localhost:5000/api/trips/test
+Content-Type: application/json
+
+{
+  "driver": "69503b8494408c971f3b3d8a",
+  "passenger": "69503b2994408c971f3b3d87",
+  "tripType": "RIDE",
+  "fareAmount": 123
+}
+
+
+###
+POST http://localhost:5000/api/reports
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTAzYjI5OTQ0MDhjOTcxZjNiM2Q4NyIsImlhdCI6MTc2NjkzMzkwNiwiZXhwIjoxNzY3MTA2NzA2fQ.T_XND8HFQvsgTY6ynWHZoJbrAiUB9-JwYNrRT3vOW8M
+Content-Type: application/json
+
+{
+  "tripId": "695146120e6e98762efe3b73",
+  "category": "Late",
+  "description": "Driver arrived 20 minutes late"
+}
+
+###
+POST http://localhost:5000/api/trips/695146120e6e98762efe3b73/confirm/passenger
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTAzYjI5OTQ0MDhjOTcxZjNiM2Q4NyIsImlhdCI6MTc2NjkzMzkwNiwiZXhwIjoxNzY3MTA2NzA2fQ.T_XND8HFQvsgTY6ynWHZoJbrAiUB9-JwYNrRT3vOW8M
+
+###
+POST http://localhost:5000/api/trips/695146120e6e98762efe3b73/confirm/driver
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTAzYjg0OTQ0MDhjOTcxZjNiM2Q4YSIsImlhdCI6MTc2NjkzMzk0NCwiZXhwIjoxNzY3MTA2NzQ0fQ.KTOfKhtWo2NAfPjWD-4rXRpLY6uFCWvcZ_rncHRtHBA
+
+###
+POST http://localhost:5000/api/reports
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTAzYjI5OTQ0MDhjOTcxZjNiM2Q4NyIsImlhdCI6MTc2NjkzMzkwNiwiZXhwIjoxNzY3MTA2NzA2fQ.T_XND8HFQvsgTY6ynWHZoJbrAiUB9-JwYNrRT3vOW8M
+Content-Type: application/json
+
+{
+  "tripId": "695146120e6e98762efe3b73",
+  "category": "Late",
+  "description": "Driver arrived 20 minutes late"
+}
+
+
+###
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@university.edu",
+  "password": "Admin123!"
+}
+
+###
+GET http://localhost:5000/api/reports
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTAzZTc4OTQ0MDhjOTcxZjNiM2Q4ZCIsImlhdCI6MTc2NjkzODA0MSwiZXhwIjoxNzY3MTEwODQxfQ.uGfLo8MxPrj9g-204OZrpZWf3HsvL2z2PuYCqta85Vk
+
+###
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@university.edu",
+  "password": "Admin123!"
+}
+
+###
+GET http://localhost:5000/api/reports
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTAzZTc4OTQ0MDhjOTcxZjNiM2Q4ZCIsImlhdCI6MTc2NjkzODkyNCwiZXhwIjoxNzY3MTExNzI0fQ.9CVY4aYFTbXicGqhbom-oWAkldZ_Yz5abrVrbMFdfTI
+
+###
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Asif",
+  "email": "asif@university.edu",
+  "password": "Admin123"
+}
+###
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "asif@university.edu",
+  "password": "Admin123"
+}
+###
+GET http://localhost:5000/api/reports
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTE2NTlmOWFmZmE1MTJhYTQ3YTY0YyIsImlhdCI6MTc2Njk0MzE0NSwiZXhwIjoxNzY3MTE1OTQ1fQ.ZitrRiMZC6kWP32DgJKEORQeFFPVsHUmc_ydD4LkgKY
+
+
+###
+PUT http://localhost:5000/api/admin/suspend/69503b8494408c971f3b3d8a
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTE2NTlmOWFmZmE1MTJhYTQ3YTY0YyIsImlhdCI6MTc2Njk0MzE0NSwiZXhwIjoxNzY3MTE1OTQ1fQ.ZitrRiMZC6kWP32DgJKEORQeFFPVsHUmc_ydD4LkgKY
+Content-Type: application/json
+
+{
+  "days": 7
+}
+
+###
+GET http://localhost:5000/api/reports
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTE2NTlmOWFmZmE1MTJhYTQ3YTY0YyIsImlhdCI6MTc2Njk0MzE0NSwiZXhwIjoxNzY3MTE1OTQ1fQ.ZitrRiMZC6kWP32DgJKEORQeFFPVsHUmc_ydD4LkgKY
+
+###
+PUT http://localhost:5000/api/admin/ban/694dc18213e84077b2aba841
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTE2NTlmOWFmZmE1MTJhYTQ3YTY0YyIsImlhdCI6MTc2Njk0MzE0NSwiZXhwIjoxNzY3MTE1OTQ1fQ.ZitrRiMZC6kWP32DgJKEORQeFFPVsHUmc_ydD4LkgKY
+###
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "nayem@university.edu",
+  "password": "d1234"
+}
+
+###
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "nayem@university.edu",
+  "password": "d1234"
+}
+###
+PUT http://localhost:5000/api/admin/ban/69503b8494408c971f3b3d8a
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTE2NTlmOWFmZmE1MTJhYTQ3YTY0YyIsImlhdCI6MTc2Njk0MzE0NSwiZXhwIjoxNzY3MTE1OTQ1fQ.ZitrRiMZC6kWP32DgJKEORQeFFPVsHUmc_ydD4LkgKY
+
+###
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "nayem@university.edu",
+  "password": "d1234"
+}
+
+###
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Passenger Atiq",
+  "email": "passengeratiq@university.edu",
+  "password": "12345"
+}
+###
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Driver Monju",
+  "email": "drivermonju@university.edu",
+  "password": "12345",
+  "roles": "driver",
+  "vehicle": {
+    "make": "Toyota",
+    "model": "Corolla",
+    "plateNumber": "DHA-1234",
+    "color": "White"
+  }
+}
+###
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "passengeratiq@university.edu",
+  "password": "12345"
+}
+###
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "drivermonju@university.edu",
+  "password": "12345"
+}
+###
+POST http://localhost:5000/api/trips/test
+Content-Type: application/json
+
+{
+  "driver": "69517f2027313d0f4e2904c6",
+  "passenger": "69517ee627313d0f4e2904c3",
+  "tripType": "RIDE",
+  "fareAmount": 145
+}
+
+###
+POST http://localhost:5000/api/trips/6951801127313d0f4e2904d6/confirm/passenger
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTE3ZWU2MjczMTNkMGY0ZTI5MDRjMyIsImlhdCI6MTc2Njk0ODY4OSwiZXhwIjoxNzY3MTIxNDg5fQ.dwDwVWgSh4As7gjYp6tsm2Fl4lpka7rnpT1-9y3VUxA
+
+###
+POST http://localhost:5000/api/trips/6951801127313d0f4e2904d6/confirm/driver
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTE3ZjIwMjczMTNkMGY0ZTI5MDRjNiIsImlhdCI6MTc2Njk0ODc0NiwiZXhwIjoxNzY3MTIxNTQ2fQ.0UuUvm33CTEP9Q9iS1Ls7-jbqR5aBEFom4GRWZWTd6U
+###
+POST http://localhost:5000/api/ratings/6951801127313d0f4e2904d6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTE3ZWU2MjczMTNkMGY0ZTI5MDRjMyIsImlhdCI6MTc2Njk0ODY4OSwiZXhwIjoxNzY3MTIxNDg5fQ.dwDwVWgSh4As7gjYp6tsm2Fl4lpka7rnpT1-9y3VUxA
+Content-Type: application/json
+
+{
+  "stars": 5,
+  "comment": "Very polite"
+}
+
+###
+GET http://localhost:5000/api/ratings/driver/69517f2027313d0f4e2904c6/summary
+
+###
+POST http://localhost:5000/api/ratings/6951821c27313d0f4e2904ec/respond
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTE3ZjIwMjczMTNkMGY0ZTI5MDRjNiIsImlhdCI6MTc2Njk0ODc0NiwiZXhwIjoxNzY3MTIxNTQ2fQ.0UuUvm33CTEP9Q9iS1Ls7-jbqR5aBEFom4GRWZWTd6U
+Content-Type: application/json
+
+{
+  "response": "Thank you for your feedback!"
+}
+
+###
+POST http://localhost:5000/api/reports
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTE3ZWU2MjczMTNkMGY0ZTI5MDRjMyIsImlhdCI6MTc2Njk0ODY4OSwiZXhwIjoxNzY3MTIxNDg5fQ.dwDwVWgSh4As7gjYp6tsm2Fl4lpka7rnpT1-9y3VUxA
+Content-Type: application/json
+
+{
+  "tripId": "6951801127313d0f4e2904d6",
+  "category": "Late",
+  "description": "Driver arrived 20 minutes late"
+}
+
+###
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Fardin",
+  "email": "fardin@university.edu",
+  "password": "Admin@470"
+}
+###
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "fardin@university.edu",
+  "password": "Admin@470"
+}
+###
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Ima",
+  "email": "ima@university.edu",
+  "password": "Admin@470"
+}
+###
+GET http://localhost:5000/api/reports
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTE4YTUyYmZlMDY1M2YwNGViYjVmOCIsImlhdCI6MTc2Njk1NTQ2MCwiZXhwIjoxNzY3MTI4MjYwfQ.TUuLcbZhTIhU40lHuXyH_NGc-bv9UemMycYEM09dfz4
+###
+PUT  http://localhost:5000/api/admin/suspend/69517f2027313d0f4e2904c6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTE4YTUyYmZlMDY1M2YwNGViYjVmOCIsImlhdCI6MTc2Njk1NTQ2MCwiZXhwIjoxNzY3MTI4MjYwfQ.TUuLcbZhTIhU40lHuXyH_NGc-bv9UemMycYEM09dfz4
+Content-Type: application/json
+
+{
+  "days": 7
+}
+###
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "drivermonju@university.edu",
+  "password": "12345"
+}
+
+###
+PUT http://localhost:5000/api/admin/ban/69517f2027313d0f4e2904c6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5NTE4YTUyYmZlMDY1M2YwNGViYjVmOCIsImlhdCI6MTc2Njk1NTQ2MCwiZXhwIjoxNzY3MTI4MjYwfQ.TUuLcbZhTIhU40lHuXyH_NGc-bv9UemMycYEM09dfz4
+###
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "drivermonju@university.edu",
+  "password": "12345"
+}
+
+###
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Driver Monju",
+  "email": "drivermonju@university.edu",
+  "password": "12345",
+  "roles": "driver",
+  "vehicle": {
+    "make": "Toyota",
+    "model": "Corolla",
+    "plateNumber": "DHA-1234",
+    "color": "White"
+  }
+}
