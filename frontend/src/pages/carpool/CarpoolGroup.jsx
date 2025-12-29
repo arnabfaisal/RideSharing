@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import { carpoolService } from '../../services/carpoolService';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
+import socket, { joinGroup, leaveGroup } from '../../services/socket';
+import { useAuth } from '../../context/AuthContext';
 
 export default function CarpoolGroupPage() {
   const { id } = useParams();
@@ -21,7 +23,19 @@ export default function CarpoolGroupPage() {
 
     // Poll for updates every 5s
     const t = setInterval(load, 5000);
-    return () => { mounted = false; clearInterval(t); };
+    // join socket room for realtime updates
+    joinGroup(id);
+
+    // handle incoming groupAccepted events
+    const onAccepted = (data) => {
+      if (data && data.groupId === id) {
+        // refresh group data
+        carpoolService.getGroup(id).then(g => setGroup(g));
+        alert('Group accepted by driver');
+      }
+    };
+    socket.on('groupAccepted', onAccepted);
+    return () => { mounted = false; clearInterval(t); socket.off('groupAccepted', onAccepted); leaveGroup(id); };
   }, [id]);
 
   if (loading) return (

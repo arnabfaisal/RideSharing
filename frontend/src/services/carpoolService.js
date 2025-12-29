@@ -32,6 +32,29 @@ export const carpoolService = {
     }
   }
   ,
+  acceptSolo: async (bookingId) => {
+    try {
+      const res = await post(`/api/r1/bookings/${bookingId}/accept`, {}, true);
+      return res;
+    } catch (e) {
+      console.error('acceptSolo error', e);
+      return { success: false, message: e.message };
+    }
+  }
+  ,
+  confirmBooking: async (bookingId) => {
+    try {
+      const res = await post(`/api/r1/bookings/${bookingId}/confirm`, {}, true);
+      return res;
+    } catch (e) { console.error('confirmBooking error', e); return { success: false, message: e.message }; }
+  },
+  updateBookingStatus: async (bookingId, status) => {
+    try {
+      const res = await post(`/api/r1/bookings/${bookingId}/status`, { status }, true);
+      return res;
+    } catch (e) { console.error('updateBookingStatus error', e); return { success: false, message: e.message }; }
+  }
+  ,
   updateLocation: async (groupId, lat, lon) => {
     try {
       const res = await post(`/api/r1/carpool/${groupId}/location`, { lat, lon }, true);
@@ -67,5 +90,12 @@ export const carpoolService = {
       console.error('getMyActivity error', e);
       return { bookings: [], trips: [] };
     }
+  }
+  ,
+  confirmTripDriver: async (tripId) => {
+    try {
+      const res = await post(`/api/trips/${tripId}/confirm/driver`, {}, true);
+      return res;
+    } catch (e) { console.error('confirmTripDriver error', e); return { success: false, message: e.message }; }
   }
 };

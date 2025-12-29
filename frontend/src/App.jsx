@@ -16,6 +16,7 @@ import ItemSendBooking from './pages/booking/ItemSendBooking';
 import CarpoolGroupPage from './pages/carpool/CarpoolGroup';
 import DriverMatches from './pages/driver/DriverMatches';
 import DriverTripControl from './pages/driver/DriverTripControl';
+import DriverBookingControl from './pages/driver/DriverBookingControl';
 import ActivityPage from './pages/Activity';
 
 // Placeholder Dashboard
@@ -83,6 +84,11 @@ export default function App() {
         <Route path="/driver/group/:id" element={
           <ProtectedRoute>
             <DriverTripControl />
+          </ProtectedRoute>
+        } />
+        <Route path="/driver/booking/:id" element={
+          <ProtectedRoute>
+            <DriverBookingControl />
           </ProtectedRoute>
         } />
         <Route path="/activity" element={

@@ -31,7 +31,13 @@ export default function DriverMatches() {
   }, []);
 
   const handleAccept = async (groupId) => {
-    const res = await carpoolService.acceptGroup(groupId);
+    let res;
+    if (groupId && String(groupId).startsWith('solo_')) {
+      const bookingId = String(groupId).replace('solo_','');
+      res = await carpoolService.acceptSolo(bookingId);
+    } else {
+      res = await carpoolService.acceptGroup(groupId);
+    }
     if (res.success) {
       // mark accepted locally
       setMatches(ms => ms.map(m => m.group._id === groupId ? { ...m, group: res.data } : m));
@@ -67,7 +73,11 @@ export default function DriverMatches() {
                       <div className="text-sm text-gray-600">Score: {Math.round(item.score*100)/100}</div>
                       <div className="flex flex-col space-y-2">
                         <button onClick={() => handleAccept(item.group._id)} className="bg-blue-600 text-white px-3 py-1 rounded">Accept Group</button>
-                        <a href={`/driver/group/${item.group._id}`} className="text-sm text-gray-700 underline">Open Control</a>
+                        {String(item.group._id).startsWith('solo_') ? (
+                          <a href={`/driver/booking/${String(item.group._id).replace('solo_','')}`} className="text-sm text-gray-700 underline">Open Control</a>
+                        ) : (
+                          <a href={`/driver/group/${item.group._id}`} className="text-sm text-gray-700 underline">Open Control</a>
+                        )}
                       </div>
                     </div>
               </li>

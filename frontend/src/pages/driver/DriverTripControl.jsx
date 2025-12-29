@@ -20,7 +20,10 @@ export default function DriverTripControl() {
 
   const sendStatus = async () => {
     const res = await carpoolService.updateStatus(id, status);
-    if (res.success) alert('Status updated'); else alert('Status update failed');
+    if (res.success) {
+      alert('Status updated');
+      if (status === 'completed') window.location.href = '/activity';
+    } else alert('Status update failed');
   };
 
   const useGeo = () => {

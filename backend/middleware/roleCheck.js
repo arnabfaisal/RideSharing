@@ -4,3 +4,10 @@ exports.requireDriverRole = (req, res, next) => {
   }
   next();
 };
+
+exports.requirePassengerRole = (req, res, next) => {
+  if (!req.user?.roles?.passenger) {
+    return res.status(403).json({ success: false, message: 'Passenger role required' });
+  }
+  next();
+};

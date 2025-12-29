@@ -65,9 +65,25 @@ exports.updateStatus = async (req, res) => {
     } else if (status === 'on_trip') {
       group.status = 'in_progress';
       await Booking.updateMany({ _id: { $in: group.bookings } }, { $set: { status: 'on_trip' } });
+      // emit bookingOnTrip for each booking room so passengers get notified
+      try {
+        const io = req.app.get('io');
+        if (io) {
+          const bookings = await Booking.find({ _id: { $in: group.bookings } });
+          bookings.forEach(b => io.to(`booking_${b._id}`).emit('bookingOnTrip', { bookingId: b._id }));
+        }
+      } catch (e) { console.error('socket emit error', e); }
     } else if (status === 'completed') {
       group.status = 'completed';
       await Booking.updateMany({ _id: { $in: group.bookings } }, { $set: { status: 'completed' } });
+      // emit bookingCompleted for each booking room so passengers get notified
+      try {
+        const io = req.app.get('io');
+        if (io) {
+          const bookings = await Booking.find({ _id: { $in: group.bookings } });
+          bookings.forEach(b => io.to(`booking_${b._id}`).emit('bookingCompleted', { bookingId: b._id }));
+        }
+      } catch (e) { console.error('socket emit error', e); }
     }
 
     await group.save();
@@ -140,6 +156,12 @@ exports.acceptGroup = async (req, res) => {
     await Booking.updateMany({ _id: { $in: group.bookings } }, { $set: { status: 'accepted' } });
 
     // In a real app we'd notify passengers via socket/push; here we just set state
+    // emit socket event to group room so passengers (and UIs) receive immediate update
+    try {
+      const io = req.app.get('io');
+      if (io) io.to(`group_${group._id}`).emit('groupAccepted', { groupId: group._id, driver: req.user._id, group });
+    } catch (e) { console.error('socket emit error', e); }
+
     res.json({ success: true, message: 'Group accepted by driver', data: group });
   } catch (err) {
     console.error('accept group error', err);
@@ -154,12 +176,26 @@ exports.listDriverMatches = async (req, res) => {
 
     const groups = await carpoolService.getOpenGroups();
 
+    // also include standalone (ungrouped) ride bookings so drivers can see single requests
+    const standalone = await Booking.find({ serviceType: 'ride', status: 'requested', carpool: false }).lean();
+    // convert standalone bookings to pseudo-groups matching the same shape
+    const standaloneGroups = standalone.map(b => ({
+      _id: `solo_${b._id}`,
+      bookings: [b],
+      pickupCentroid: { lat: b.pickup.lat, lon: b.pickup.lon },
+      destinationCentroid: b.destination ? { lat: b.destination.lat, lon: b.destination.lon } : null,
+      totalFare: b.estimatedFare || 0,
+      splitFares: { [b._id]: b.estimatedFare || 0 }
+    }));
+
+    const allGroups = groups.concat(standaloneGroups);
+
     // simple scoring using distance, route direction (if provided) and average passenger rating
     const { bearingDegrees, haversineDistanceKm } = require('../utils/geo');
     const driverDestLat = req.query.driverDestLat;
     const driverDestLon = req.query.driverDestLon;
 
-    const scored = groups.map(g => {
+    const scored = allGroups.map(g => {
       const dist = haversineDistanceKm(parseFloat(lat), parseFloat(lon), g.pickupCentroid?.lat || 0, g.pickupCentroid?.lon || 0);
       const avgRating = (g.bookings.reduce((s, b) => s + (b.user?.rating || 5), 0) / Math.max(1, g.bookings.length));
 

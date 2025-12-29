@@ -16,6 +16,7 @@ const bookingSchema = new mongoose.Schema({
   carpool: { type: Boolean, default: false },
   carpoolGroup: { type: mongoose.Schema.Types.ObjectId, ref: 'CarpoolGroup', default: null },
   passengerFare: { type: Number, default: null },
+  trip: { type: mongoose.Schema.Types.ObjectId, ref: 'Trip', default: null },
   // Item specific
   itemDescription: { type: String, default: '' },
   itemSize: { type: String, enum: ['small','medium','large'], default: 'small' },
