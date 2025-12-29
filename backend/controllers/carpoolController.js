@@ -29,6 +29,116 @@ exports.getGroup = async (req, res) => {
   }
 };
 
+// driver updates live location for group
+exports.updateLocation = async (req, res) => {
+  try {
+    const group = await CarpoolGroup.findById(req.params.id);
+    if (!group) return res.status(404).json({ success: false, message: 'Group not found' });
+    if (!group.driver || group.driver.toString() !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Only driver can update location' });
+
+    const { lat, lon } = req.body;
+    if (typeof lat !== 'number' || typeof lon !== 'number') return res.status(400).json({ success: false, message: 'lat and lon required (numbers)' });
+
+    group.liveLocation = { lat, lon, updatedAt: new Date() };
+    await group.save();
+
+    res.json({ success: true, message: 'Location updated', data: group.liveLocation });
+  } catch (err) {
+    console.error('updateLocation error', err);
+    res.status(500).json({ success: false, message: 'Failed', error: err.message });
+  }
+};
+
+// driver updates trip status for a group
+exports.updateStatus = async (req, res) => {
+  try {
+    const group = await CarpoolGroup.findById(req.params.id);
+    if (!group) return res.status(404).json({ success: false, message: 'Group not found' });
+    if (!group.driver || group.driver.toString() !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Only driver can update status' });
+
+    const { status } = req.body; // expected: 'arrived', 'on_trip', 'completed'
+    if (!['arrived','on_trip','completed'].includes(status)) return res.status(400).json({ success: false, message: 'Invalid status' });
+
+    if (status === 'arrived') {
+      group.status = 'driver_accepted';
+      // bookings remain 'accepted'
+    } else if (status === 'on_trip') {
+      group.status = 'in_progress';
+      await Booking.updateMany({ _id: { $in: group.bookings } }, { $set: { status: 'on_trip' } });
+      // emit bookingOnTrip for each booking room so passengers get notified
+      try {
+        const io = req.app.get('io');
+        if (io) {
+          const bookings = await Booking.find({ _id: { $in: group.bookings } });
+          bookings.forEach(b => io.to(`booking_${b._id}`).emit('bookingOnTrip', { bookingId: b._id }));
+        }
+      } catch (e) { console.error('socket emit error', e); }
+    } else if (status === 'completed') {
+      group.status = 'completed';
+      await Booking.updateMany({ _id: { $in: group.bookings } }, { $set: { status: 'completed' } });
+      // emit bookingCompleted for each booking room so passengers get notified
+      try {
+        const io = req.app.get('io');
+        if (io) {
+          const bookings = await Booking.find({ _id: { $in: group.bookings } });
+          bookings.forEach(b => io.to(`booking_${b._id}`).emit('bookingCompleted', { bookingId: b._id }));
+        }
+      } catch (e) { console.error('socket emit error', e); }
+    }
+
+    await group.save();
+    res.json({ success: true, message: 'Status updated', data: group });
+  } catch (err) {
+    console.error('updateStatus error', err);
+    res.status(500).json({ success: false, message: 'Failed', error: err.message });
+  }
+};
+
+// passenger rates driver for a group after completion
+exports.rateDriver = async (req, res) => {
+  try {
+    const group = await CarpoolGroup.findById(req.params.id).populate('driver');
+    if (!group) return res.status(404).json({ success: false, message: 'Group not found' });
+    if (group.status !== 'completed') return res.status(400).json({ success: false, message: 'Can only rate after completion' });
+
+    const { rating } = req.body;
+    if (typeof rating !== 'number' || rating < 1 || rating > 5) return res.status(400).json({ success: false, message: 'Rating must be number 1..5' });
+
+    // ensure passenger is part of group
+    const isPassenger = group.bookings.some(b => b.toString() === req.booking?._id?.toString());
+    // if booking not present in request context we'll allow rating if user is one of bookings' users
+    // fetch bookings to check
+    const bookings = await Booking.find({ _id: { $in: group.bookings } });
+    const belongs = bookings.some(b => b.user && b.user.toString() === req.user._id.toString());
+    if (!belongs) return res.status(403).json({ success: false, message: 'Only passengers in group can rate' });
+
+    // store rating in group
+    group.ratings = group.ratings || [];
+    group.ratings.push({ passenger: req.user._id, rating });
+    await group.save();
+
+    // update driver aggregate rating
+    const User = require('../models/User');
+    if (group.driver) {
+      const drv = await User.findById(group.driver._id);
+      if (drv) {
+        const prevCount = drv.ratingCount || 0;
+        const prevRating = drv.rating || 5;
+        const newCount = prevCount + 1;
+        const newRating = ((prevRating * prevCount) + rating) / newCount;
+        drv.rating = Math.round(newRating*10)/10;
+        drv.ratingCount = newCount;
+        await drv.save();
+      }
+    }
+
+    res.json({ success: true, message: 'Rating submitted' });
+  } catch (err) {
+    console.error('rateDriver error', err);
+    res.status(500).json({ success: false, message: 'Failed', error: err.message });
+  }
+};
+
 // driver accepts the group as a unit
 exports.acceptGroup = async (req, res) => {
   try {
@@ -46,6 +156,12 @@ exports.acceptGroup = async (req, res) => {
     await Booking.updateMany({ _id: { $in: group.bookings } }, { $set: { status: 'accepted' } });
 
     // In a real app we'd notify passengers via socket/push; here we just set state
+    // emit socket event to group room so passengers (and UIs) receive immediate update
+    try {
+      const io = req.app.get('io');
+      if (io) io.to(`group_${group._id}`).emit('groupAccepted', { groupId: group._id, driver: req.user._id, group });
+    } catch (e) { console.error('socket emit error', e); }
+
     res.json({ success: true, message: 'Group accepted by driver', data: group });
   } catch (err) {
     console.error('accept group error', err);
@@ -60,12 +176,26 @@ exports.listDriverMatches = async (req, res) => {
 
     const groups = await carpoolService.getOpenGroups();
 
+    // also include standalone (ungrouped) ride bookings so drivers can see single requests
+    const standalone = await Booking.find({ serviceType: 'ride', status: 'requested', carpool: false }).lean();
+    // convert standalone bookings to pseudo-groups matching the same shape
+    const standaloneGroups = standalone.map(b => ({
+      _id: `solo_${b._id}`,
+      bookings: [b],
+      pickupCentroid: { lat: b.pickup.lat, lon: b.pickup.lon },
+      destinationCentroid: b.destination ? { lat: b.destination.lat, lon: b.destination.lon } : null,
+      totalFare: b.estimatedFare || 0,
+      splitFares: { [b._id]: b.estimatedFare || 0 }
+    }));
+
+    const allGroups = groups.concat(standaloneGroups);
+
     // simple scoring using distance, route direction (if provided) and average passenger rating
     const { bearingDegrees, haversineDistanceKm } = require('../utils/geo');
     const driverDestLat = req.query.driverDestLat;
     const driverDestLon = req.query.driverDestLon;
 
-    const scored = groups.map(g => {
+    const scored = allGroups.map(g => {
       const dist = haversineDistanceKm(parseFloat(lat), parseFloat(lon), g.pickupCentroid?.lat || 0, g.pickupCentroid?.lon || 0);
       const avgRating = (g.bookings.reduce((s, b) => s + (b.user?.rating || 5), 0) / Math.max(1, g.bookings.length));
 

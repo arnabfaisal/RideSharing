@@ -150,3 +150,41 @@ exports.getMe = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error', error: err.message });
   }
 };
+
+// update roles for current user (allow toggling passenger/driver roles)
+exports.updateRoles = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const { roles, vehicle } = req.body || {};
+    // roles may be string or object similar to register
+    const roleObj = { driver: !!user.roles.driver, passenger: !!user.roles.passenger };
+    if (roles) {
+      if (typeof roles === 'string') {
+        roleObj.driver = roles === 'driver' || roles === 'both' ? true : roleObj.driver;
+        roleObj.passenger = roles === 'passenger' || roles === 'both' ? true : roleObj.passenger;
+      } else if (typeof roles === 'object') {
+        if (typeof roles.driver === 'boolean') roleObj.driver = roles.driver;
+        if (typeof roles.passenger === 'boolean') roleObj.passenger = roles.passenger;
+      }
+    }
+
+    // If enabling driver role, ensure vehicle provided or exists
+    if (roleObj.driver && !user.vehicle && !vehicle) {
+      return res.status(400).json({ success: false, message: 'Driver role requires vehicle details' });
+    }
+
+    user.roles = roleObj;
+    if (vehicle) user.vehicle = vehicle;
+    await user.save();
+
+    // return updated user (without password)
+    const safe = user.toObject();
+    delete safe.password;
+    res.json({ success: true, data: safe });
+  } catch (err) {
+    console.error('updateRoles error', err);
+    res.status(500).json({ success: false, message: 'Failed', error: err.message });
+  }
+};

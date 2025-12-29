@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const tripSchema = new mongoose.Schema({
+  booking: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking', default: null },
   driver: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

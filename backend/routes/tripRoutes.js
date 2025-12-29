@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Trip = require('../models/Trip');
+const Booking = require('../models/Bookings');
 const { protect } = require('../middleware/auth');
 
 /**
@@ -73,6 +74,24 @@ router.post('/:id/confirm/passenger', protect, async (req, res) => {
 
     await trip.save();
 
+    // notify booking room if linked so passenger UI updates
+    try {
+      const io = req.app.get('io');
+      if (io && trip.booking) {
+        // if both confirmed -> completed
+        if (trip.status === 'COMPLETED') io.to(`booking_${trip.booking}`).emit('bookingCompleted', { bookingId: trip.booking, trip });
+        else io.to(`booking_${trip.booking}`).emit('bookingOnTrip', { bookingId: trip.booking, trip });
+      }
+    } catch (e) { console.error('socket emit error', e); }
+
+    // ensure booking record is updated when trip status changes
+    try {
+      if (trip.booking) {
+        const bookingStatus = trip.status === 'COMPLETED' ? 'completed' : 'on_trip';
+        await Booking.findByIdAndUpdate(trip.booking, { $set: { status: bookingStatus } });
+      }
+    } catch (e) { console.error('failed to sync booking status', e); }
+
     res.json({
       success: true,
       message: 'Passenger confirmed trip',
@@ -115,6 +134,22 @@ router.post('/:id/confirm/driver', protect, async (req, res) => {
 
     await trip.save();
 
+    // notify booking room if linked so passenger UI updates
+    try {
+      const io = req.app.get('io');
+      if (io && trip.booking) {
+        if (trip.status === 'COMPLETED') io.to(`booking_${trip.booking}`).emit('bookingCompleted', { bookingId: trip.booking, trip });
+        else io.to(`booking_${trip.booking}`).emit('bookingOnTrip', { bookingId: trip.booking, trip });
+      }
+    } catch (e) { console.error('socket emit error', e); }
+
+    // ensure booking record is updated when trip status changes
+    try {
+      if (trip.booking) {
+        const bookingStatus = trip.status === 'COMPLETED' ? 'completed' : 'on_trip';
+        await Booking.findByIdAndUpdate(trip.booking, { $set: { status: bookingStatus } });
+      }
+    } catch (e) { console.error('failed to sync booking status', e); }
     res.json({
       success: true,
       message: 'Driver confirmed trip',

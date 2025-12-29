@@ -26,38 +26,54 @@ export default function Header() {
               >
                 Dashboard
               </Link>
-              
-              {/* Book Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowBookDropdown(!showBookDropdown)}
-                  className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium flex items-center"
+              <Link 
+                to="/activity" 
+                className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
+              >
+                My Activity
+              </Link>
+              {user?.roles?.driver && (
+                <Link 
+                  to="/driver/matches" 
+                  className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
                 >
-                  Book Now
-                  <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                
-                {showBookDropdown && (
-                  <div className="absolute z-10 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
-                    <Link
-                      to="/booking/ride"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setShowBookDropdown(false)}
-                    >
-                      🚗 Book a Ride
-                    </Link>
-                    <Link
-                      to="/booking/item"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setShowBookDropdown(false)}
-                    >
-                      📦 Send an Item
-                    </Link>
-                  </div>
-                )}
-              </div>
+                  Driver Matches
+                </Link>
+              )}
+              
+              {/* Book Dropdown - only for passengers */}
+              {user?.roles?.passenger && (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowBookDropdown(!showBookDropdown)}
+                    className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium flex items-center"
+                  >
+                    Book Now
+                    <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  
+                  {showBookDropdown && (
+                    <div className="absolute z-10 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                      <Link
+                        to="/booking/ride"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setShowBookDropdown(false)}
+                      >
+                        🚗 Book a Ride
+                      </Link>
+                      <Link
+                        to="/booking/item"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setShowBookDropdown(false)}
+                      >
+                        📦 Send an Item
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
               
               <Link 
                 to="/how-it-works" 

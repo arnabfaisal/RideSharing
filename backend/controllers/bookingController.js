@@ -174,3 +174,123 @@ exports.getBooking = async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed', error: err.message });
   }
 };     
+
+// driver accepts a solo booking (non-carpool)
+exports.acceptBooking = async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+    const booking = await Booking.findById(bookingId).populate('user');
+    if (!booking) return res.status(404).json({ success: false, message: 'Booking not found' });
+    if (booking.carpool) return res.status(400).json({ success: false, message: 'This is a carpool booking; use group accept' });
+    if (booking.status !== 'requested') return res.status(400).json({ success: false, message: 'Booking not available' });
+
+    // mark booking accepted
+    booking.status = 'accepted';
+    await booking.save();
+
+    // create a Trip record for driver/passenger
+    const Trip = require('../models/Trip');
+    const trip = await Trip.create({
+      booking: booking._id,
+      driver: req.user._id,
+      passenger: booking.user._id,
+      tripType: booking.serviceType === 'ride' ? 'RIDE' : 'ITEM',
+      fareAmount: booking.estimatedFare || 0,
+      status: 'PENDING_CONFIRMATION'
+    });
+
+    // link booking -> trip
+    booking.trip = trip._id;
+    await booking.save();
+
+    // emit socket event for booking acceptance
+    try {
+      const io = req.app.get('io');
+      if (io) io.to(`booking_${booking._id}`).emit('bookingAccepted', { bookingId: booking._id, trip });
+    } catch (e) { console.error('socket emit error', e); }
+
+    res.json({ success: true, message: 'Booking accepted by driver', data: { booking, trip } });
+  } catch (err) {
+    console.error('accept booking error', err);
+    res.status(500).json({ success: false, message: 'Accept failed', error: err.message });
+  }
+};
+
+// passenger confirms pickup/start for a solo booking
+exports.confirmBooking = async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+    const booking = await Booking.findById(bookingId).populate('user');
+    if (!booking) return res.status(404).json({ success: false, message: 'Booking not found' });
+    // ensure requester is the booking owner (handle populated user doc or raw ObjectId)
+    const bookingOwnerId = booking.user && booking.user._id ? booking.user._id.toString() : booking.user.toString();
+    if (bookingOwnerId !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Only passenger can confirm' });
+    if (booking.status !== 'accepted') return res.status(400).json({ success: false, message: 'Booking not in accepted state' });
+
+    // mark on_trip
+    booking.status = 'on_trip';
+    await booking.save();
+
+    // update trip if present
+    const Trip = require('../models/Trip');
+    const trip = booking.trip ? await Trip.findById(booking.trip) : null;
+    if (trip) {
+      trip.status = 'IN_PROGRESS';
+      await trip.save();
+    }
+
+    // notify driver via socket
+    try { const io = req.app.get('io'); if (io) io.to(`booking_${booking._id}`).emit('bookingConfirmed', { bookingId: booking._id, trip }); } catch(e){}
+
+    res.json({ success: true, message: 'Booking confirmed (on trip)', data: { booking, trip } });
+  } catch (err) {
+    console.error('confirm booking error', err);
+    res.status(500).json({ success: false, message: 'Failed', error: err.message });
+  }
+};
+
+// driver updates solo booking status (arrived/on_trip/completed)
+exports.updateBookingStatus = async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+    const { status } = req.body; // 'arrived', 'on_trip', 'completed'
+    if (!['arrived','on_trip','completed'].includes(status)) return res.status(400).json({ success: false, message: 'Invalid status' });
+    const booking = await Booking.findById(bookingId).populate('user');
+    if (!booking) return res.status(404).json({ success: false, message: 'Booking not found' });
+    // Only allow if booking is accepted or on_trip depending
+
+    if (status === 'arrived') {
+      // no change to booking status; could notify passenger
+      try { const io = req.app.get('io'); if (io) io.to(`booking_${booking._id}`).emit('driverArrived', { bookingId: booking._id }); } catch(e){}
+      return res.json({ success: true, message: 'Driver arrived notified' });
+    }
+
+    if (status === 'on_trip') {
+      booking.status = 'on_trip';
+      await booking.save();
+      if (booking.trip) {
+        const Trip = require('../models/Trip');
+        const trip = await Trip.findById(booking.trip);
+        if (trip) { trip.status = 'IN_PROGRESS'; await trip.save(); }
+      }
+      try { const io = req.app.get('io'); if (io) io.to(`booking_${booking._id}`).emit('bookingOnTrip', { bookingId: booking._id }); } catch(e){}
+      return res.json({ success: true, message: 'Booking set to on_trip' });
+    }
+
+    if (status === 'completed') {
+      booking.status = 'completed';
+      await booking.save();
+      if (booking.trip) {
+        const Trip = require('../models/Trip');
+        const trip = await Trip.findById(booking.trip);
+        if (trip) { trip.status = 'COMPLETED'; await trip.save(); }
+      }
+      try { const io = req.app.get('io'); if (io) io.to(`booking_${booking._id}`).emit('bookingCompleted', { bookingId: booking._id }); } catch(e){}
+      return res.json({ success: true, message: 'Booking completed' });
+    }
+
+  } catch (err) {
+    console.error('update booking status error', err);
+    res.status(500).json({ success: false, message: 'Failed', error: err.message });
+  }
+};

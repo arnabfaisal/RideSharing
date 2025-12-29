@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { get } from '../services/api';
+import { get, put } from '../services/api';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Alert from '../components/ui/Alert';
@@ -119,6 +119,40 @@ export default function Profile() {
                   </div>
                 </div>
 
+                {/* Testing: Toggle passenger role */}
+                <div className="pt-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Role Controls (testing)</h4>
+                  <div className="flex items-center space-x-3">
+                    {user?.roles?.passenger ? (
+                      <button
+                        onClick={async () => {
+                          try {
+                            await put('/api/auth/me/roles', { roles: { passenger: false } }, true);
+                            await loadUser();
+                            alert('Passenger role disabled');
+                          } catch (e) { alert('Failed to update role: ' + e.message); }
+                        }}
+                        className="px-3 py-1 bg-red-100 text-red-800 rounded"
+                      >
+                        Disable Passenger
+                      </button>
+                    ) : (
+                      <button
+                        onClick={async () => {
+                          try {
+                            await put('/api/auth/me/roles', { roles: { passenger: true } }, true);
+                            await loadUser();
+                            alert('Passenger role enabled');
+                          } catch (e) { alert('Failed to update role: ' + e.message); }
+                        }}
+                        className="px-3 py-1 bg-green-100 text-green-800 rounded"
+                      >
+                        Enable Passenger
+                      </button>
+                    )}
+                  </div>
+                </div>
+
                 {/* Vehicle Info */}
                 {user?.vehicle && (
                   <div className="pt-6 border-t">
@@ -173,23 +207,29 @@ export default function Profile() {
 
             <Card>
               <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
-              <div className="space-y-3">
-                <Link to="/booking/ride">
-                  <Button variant="primary" className="w-full">
-                    Book a Ride
-                  </Button>
-                </Link>
-                <Link to="/booking/item">
-                  <Button variant="secondary" className="w-full">
-                    Send an Item
-                  </Button>
-                </Link>
-                <Link to="/dashboard">
-                  <Button variant="outline" className="w-full">
-                    Go to Dashboard
-                  </Button>
-                </Link>
-              </div>
+                <div className="space-y-3">
+                  {user?.roles?.passenger ? (
+                    <>
+                      <Link to="/booking/ride">
+                        <Button variant="primary" className="w-full">
+                          Book a Ride
+                        </Button>
+                      </Link>
+                      <Link to="/booking/item">
+                        <Button variant="secondary" className="w-full">
+                          Send an Item
+                        </Button>
+                      </Link>
+                    </>
+                  ) : (
+                    <div className="text-sm text-gray-600">Booking available for passengers only.</div>
+                  )}
+                  <Link to="/dashboard">
+                    <Button variant="outline" className="w-full">
+                      Go to Dashboard
+                    </Button>
+                  </Link>
+                </div>
             </Card>
           </div>
         </div>

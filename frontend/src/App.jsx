@@ -13,6 +13,11 @@ import Footer from './components/layout/Footer';
 import ServiceSelection from './pages/booking/ServiceSelection';
 import RideBooking from './pages/booking/RideBooking';
 import ItemSendBooking from './pages/booking/ItemSendBooking';
+import CarpoolGroupPage from './pages/carpool/CarpoolGroup';
+import DriverMatches from './pages/driver/DriverMatches';
+import DriverTripControl from './pages/driver/DriverTripControl';
+import DriverBookingControl from './pages/driver/DriverBookingControl';
+import ActivityPage from './pages/Activity';
 
 // Placeholder Dashboard
 function DashboardPage() {
@@ -62,6 +67,33 @@ export default function App() {
         <Route path="/booking/item" element={
           <ProtectedRoute>
             <ItemSendBooking />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/carpool/:id" element={
+          <ProtectedRoute>
+            <CarpoolGroupPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/driver/matches" element={
+          <ProtectedRoute>
+            <DriverMatches />
+          </ProtectedRoute>
+        } />
+        <Route path="/driver/group/:id" element={
+          <ProtectedRoute>
+            <DriverTripControl />
+          </ProtectedRoute>
+        } />
+        <Route path="/driver/booking/:id" element={
+          <ProtectedRoute>
+            <DriverBookingControl />
+          </ProtectedRoute>
+        } />
+        <Route path="/activity" element={
+          <ProtectedRoute>
+            <ActivityPage />
           </ProtectedRoute>
         } />
         
