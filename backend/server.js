@@ -18,6 +18,15 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
+// JSON parse error handler: log payload and respond 400 for invalid JSON
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    console.error('Invalid JSON received:', err.body || err.message);
+    return res.status(400).json({ success: false, message: 'Invalid JSON payload' });
+  }
+  next(err);
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/r1', bookingRoutes);
 app.use('/api/trips', tripRoutes);

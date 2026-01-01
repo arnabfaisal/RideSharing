@@ -22,6 +22,9 @@ function generateReferralCode() {
 }
 
 async function createRewardAccount(userId) {
+  const existing = await RewardAccount.findOne({ userId });
+  if (existing) return existing;
+
   return RewardAccount.create({
     userId,
     referralCode: generateReferralCode()
