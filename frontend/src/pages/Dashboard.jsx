@@ -1,11 +1,39 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import { carpoolService } from '../services/carpoolService';
+import { get } from '../services/api';
+
+
+
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const [totals, setTotals] = useState({ totalRides: 0, itemsSent: 0, rewardPoints: 0 });
+
+  useEffect(() => {
+    const loadCounts = async () => {
+      if (!user) return;
+      try {
+        const act = await carpoolService.getMyActivity();
+        const bookings = act.bookings || [];
+        const trips = act.trips || [];
+        const rides = bookings.filter(b => b.serviceType === 'ride').length + trips.length;
+        const itemsSent = bookings.filter(b => b.serviceType === 'item').length;
+        let rewardPoints = user?.rewardPoints || 0;
+        try {
+          const res = await get(`/api/rewards/dashboard/${user._id}`, true);
+          rewardPoints = res.account?.points || rewardPoints;
+        } catch (e) { console.error('Failed to load reward points', e); }
+        setTotals({ totalRides: rides, itemsSent, rewardPoints });
+      } catch (e) {
+        console.error('Failed to load activity', e);
+      }
+    };
+    loadCounts();
+  }, [user]);
 
   // Quick action cards
   const quickActions = [
@@ -40,7 +68,15 @@ export default function Dashboard() {
       color: 'orange',
       path: '/activity-history',
       features: ['Past rides', 'Item deliveries', 'Ratings']
-    }
+    },
+    {
+        title: 'Rewards & Points',
+        description: 'View and redeem your reward points',
+        icon: '🎁',
+        color: 'indigo',
+        path: '/rewards',
+        features: ['Earn points', 'Redeem rewards', 'Track progress']
+      }
   ];
 
   // Driver-specific actions (if user is a driver)
@@ -74,11 +110,11 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow p-4">
             <div className="text-sm text-gray-600">Total Rides</div>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{totals.totalRides}</div>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
             <div className="text-sm text-gray-600">Items Sent</div>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{totals.itemsSent}</div>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
             <div className="text-sm text-gray-600">Rating</div>
@@ -86,7 +122,9 @@ export default function Dashboard() {
           </div>
           <div className="bg-white rounded-lg shadow p-4">
             <div className="text-sm text-gray-600">Reward Points</div>
-            <div className="text-2xl font-bold text-blue-600">0</div>
+            <div className="text-2xl font-bold text-blue-600">
+              {totals.rewardPoints}
+            </div>
           </div>
         </div>
 
@@ -106,6 +144,7 @@ export default function Dashboard() {
                     action.color === 'green' ? 'bg-green-100 text-green-600' :
                     action.color === 'purple' ? 'bg-purple-100 text-purple-600' :
                     action.color === 'orange' ? 'bg-orange-100 text-orange-600' :
+                    action.color === 'indigo' ? 'bg-indigo-100 text-indigo-600' :
                     'bg-red-100 text-red-600'
                   }`}>
                     {action.icon}
@@ -133,6 +172,8 @@ export default function Dashboard() {
                       action.color === 'green' ? 'bg-green-600 hover:bg-green-700' :
                       action.color === 'purple' ? 'bg-purple-600 hover:bg-purple-700' :
                       action.color === 'orange' ? 'bg-orange-600 hover:bg-orange-700' :
+                      action.color === 'indigo' ? 'bg-indigo-600 hover:bg-indigo-700' :
+
                       'bg-red-600 hover:bg-red-700'
                     } text-white transition-colors`}>
                       Go to {action.title}

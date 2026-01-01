@@ -61,27 +61,34 @@ export default function DriverMatches() {
           )}
 
           <ul className="space-y-3 mt-4">
-            {matches.map(item => (
-              <li key={item.group._id} className="border p-3 rounded flex justify-between items-start">
-                <div>
-                  <div className="font-medium">Group {item.group._id}</div>
-                      <div className="text-sm text-gray-500">Passengers: {item.group.bookings.length}</div>
-                  <div className="text-sm text-gray-500">Distance: {item.distanceKm} km</div>
-                  <div className="text-sm text-gray-500">AvgRating: {item.avgRating}</div>
-                </div>
-                    <div className="flex flex-col items-end space-y-2">
-                      <div className="text-sm text-gray-600">Score: {Math.round(item.score*100)/100}</div>
-                      <div className="flex flex-col space-y-2">
-                        <button onClick={() => handleAccept(item.group._id)} className="bg-blue-600 text-white px-3 py-1 rounded">Accept Group</button>
-                        {String(item.group._id).startsWith('solo_') ? (
-                          <a href={`/driver/booking/${String(item.group._id).replace('solo_','')}`} className="text-sm text-gray-700 underline">Open Control</a>
-                        ) : (
-                          <a href={`/driver/group/${item.group._id}`} className="text-sm text-gray-700 underline">Open Control</a>
-                        )}
-                      </div>
+            {matches.map((item, idx) => {
+              const group = item?.group || {};
+              const bookingsCount = Array.isArray(group.bookings) ? group.bookings.length : (group.bookings ? 1 : 0);
+              const groupIdStr = String(group._id || '');
+
+              return (
+                <li key={group._id || `match_${idx}`} className="border p-3 rounded flex justify-between items-start">
+                  <div>
+                    <div className="font-medium">Group {group._id || 'N/A'}</div>
+                    <div className="text-sm text-gray-500">Passengers: {bookingsCount}</div>
+                    <div className="text-sm text-gray-500">Distance: {item.distanceKm ?? 'N/A'} km</div>
+                    <div className="text-sm text-gray-500">AvgRating: {item.avgRating ?? 'N/A'}</div>
+                  </div>
+
+                  <div className="flex flex-col items-end space-y-2">
+                    <div className="text-sm text-gray-600">Score: {typeof item.score === 'number' ? Math.round(item.score*100)/100 : 'N/A'}</div>
+                    <div className="flex flex-col space-y-2">
+                      <button onClick={() => handleAccept(group._id)} className="bg-blue-600 text-white px-3 py-1 rounded">Accept Group</button>
+                      {groupIdStr.startsWith('solo_') ? (
+                        <a href={`/driver/booking/${groupIdStr.replace('solo_','')}`} className="text-sm text-gray-700 underline">Open Control</a>
+                      ) : (
+                        <a href={`/driver/group/${group._id}`} className="text-sm text-gray-700 underline">Open Control</a>
+                      )}
                     </div>
-              </li>
-            ))}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </div>

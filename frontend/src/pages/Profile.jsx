@@ -5,6 +5,12 @@ import { get, put } from '../services/api';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Alert from '../components/ui/Alert';
+import { carpoolService } from '../services/carpoolService';
+
+
+
+
+
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -12,6 +18,13 @@ export default function Profile() {
   const [error, setError] = useState('');
   const { logout } = useAuth();
   const navigate = useNavigate();
+
+  //r4
+
+  const [rewardPoints, setRewardPoints] = useState(0); // ADD THIS LINE
+  const [totals, setTotals] = useState({ totalRides: 0, itemsSent: 0, carpoolsJoined: 0 });
+
+  // r4
 
   useEffect(() => {
     loadUser();
@@ -22,6 +35,29 @@ export default function Profile() {
       const res = await get('/api/auth/me', true);
       if (res.success) {
         setUser(res.data);
+
+        // R4: reward points
+        try {
+          const rewardsRes = await get(`/api/rewards/dashboard/${res.data._id}`, true);
+          setRewardPoints(rewardsRes.account?.points || 0);
+        } catch (err) {
+          console.error('Failed to load rewards:', err);
+        }
+        // R4
+
+        // Load activity counts
+        try {
+          const act = await carpoolService.getMyActivity();
+          const bookings = act.bookings || [];
+          const trips = act.trips || [];
+          const totalRides = bookings.filter(b => b.serviceType === 'ride').length + trips.length;
+          const itemsSent = bookings.filter(b => b.serviceType === 'item').length;
+          const carpoolsJoined = bookings.filter(b => b.carpool === true).length;
+          setTotals({ totalRides, itemsSent, carpoolsJoined });
+        } catch (err) {
+          console.error('Failed to load activity counts', err);
+        }
+
       } else {
         setError('Failed to load profile');
       }
@@ -188,19 +224,19 @@ export default function Profile() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Total Rides</span>
-                  <span className="font-bold">0</span>
+                  <span className="font-bold">{totals.totalRides}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Items Delivered</span>
-                  <span className="font-bold">0</span>
+                  <span className="font-bold">{totals.itemsSent}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Carpools Joined</span>
-                  <span className="font-bold">0</span>
+                  <span className="font-bold">{totals.carpoolsJoined}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Reward Points</span>
-                  <span className="font-bold text-blue-600">0</span>
+                  <span className="font-bold text-blue-600">{rewardPoints}</span>
                 </div>
               </div>
             </Card>
@@ -227,6 +263,11 @@ export default function Profile() {
                   <Link to="/dashboard">
                     <Button variant="outline" className="w-full">
                       Go to Dashboard
+                    </Button>
+                  </Link>
+                  <Link to="/rewards">
+                    <Button variant="primary" className="w-full">
+                      View Rewards
                     </Button>
                   </Link>
                 </div>
