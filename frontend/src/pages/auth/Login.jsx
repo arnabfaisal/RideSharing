@@ -5,6 +5,7 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Alert from '../../components/ui/Alert';
+import AppealModal from '../../components/appeals/AppealModal';
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -17,6 +18,13 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/dashboard';
+  const [suspensionInfo, setSuspensionInfo] = useState(null);
+  const [showAppeal, setShowAppeal] = useState(false);
+  const formatSuspensionDate = (date) => {
+  if (!date) return 'Until further notice';
+  const d = new Date(date);
+  return isNaN(d.getTime()) ? 'Until further notice' : d.toLocaleString();
+};
 
   const handleChange = (e) => {
     setFormData({
@@ -33,9 +41,23 @@ export default function Login() {
     try {
       await login(formData.email, formData.password);
       navigate(from, { replace: true });
-    } catch (err) {
-      setError(err.message || 'Login failed. Please check your credentials.');
-    } finally {
+    }  
+   catch (err) {
+  // err IS the backend response now
+  const data = err // ✅ CORRECT
+    
+
+  // 🚫 Suspended account
+  if (data?.message === 'Account temporarily suspended') {
+    setSuspensionInfo(data);
+    setError('Account temporarily suspended');
+  }else if (data?.message === 'Account permanently banned') {
+    setError('Account permanently banned');
+  }else {
+    setError(data?.message || 'Login failed. Please check your credentials.');
+  }
+}
+ finally {
       setLoading(false);
     }
   };
@@ -54,8 +76,44 @@ export default function Login() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <Card>
           <form className="space-y-6" onSubmit={handleSubmit}>
-            {error && <Alert type="error" message={error} />}
-            
+{error && (
+  <Alert
+    type="error"
+    message={
+      error === 'Account temporarily suspended'
+        ? suspensionInfo?.suspendedUntil
+          ? `Your account is suspended until ${formatSuspensionDate(
+              suspensionInfo.suspendedUntil
+            )}`
+          : 'Your account is suspended'
+        : error
+    }
+  />
+)}
+
+
+
+{suspensionInfo && (suspensionInfo.appealCount ?? 0) < 2 && (
+  <div className="mt-3 text-center">
+    <p className="text-sm text-gray-600 mb-2">
+      Suspended until:{' '}
+      <strong>
+        {formatSuspensionDate(suspensionInfo.suspendedUntil)}
+      </strong>
+    </p>
+
+    <Button
+      type="button"
+      className="bg-orange-600 hover:bg-orange-700 text-white"
+      onClick={() => setShowAppeal(true)}
+    >
+      Appeal Suspension
+    </Button>
+  </div>
+)}
+
+
+
             <Input
               label="Email address"
               name="email"
@@ -118,6 +176,15 @@ export default function Login() {
           </div>
         </Card>
       </div>
+      {/* 🔔 Appeal Modal */}
+      {showAppeal && (
+  <AppealModal
+    email={formData.email}
+    onClose={() => setShowAppeal(false)}
+  />
+)}
+
     </div>
+    
   );
 }

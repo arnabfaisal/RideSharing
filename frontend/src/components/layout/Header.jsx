@@ -38,9 +38,34 @@ export default function Header() {
                   className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
                 >
                   Driver Matches
-                </Link>
+                </Link>  
               )}
-              
+              {user?.roles?.driver && (
+  <Link 
+    to="/driver/ratings" 
+    className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
+  >
+    My Ratings
+  </Link>
+)}
+{user?.roles?.admin && (
+  <>
+    <Link
+      to="/admin/reports"
+      className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
+    >
+      Admin Reports
+    </Link>
+
+    <Link
+      to="/admin/appeals"
+      className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
+    >
+      Appeals
+    </Link>
+  </>
+)}
+
               {/* Book Dropdown - only for passengers */}
               {user?.roles?.passenger && (
                 <div className="relative">

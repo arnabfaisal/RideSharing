@@ -23,7 +23,25 @@ const userSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   isSuspended: { type: Boolean, default: false },
   suspendedUntil: { type: Date, default: null },
-  isBanned: { type: Boolean, default: false }
+  isBanned: { type: Boolean, default: false },
+  
+  appealCount: {
+  type: Number,
+  default: 0
+},
+
+appealStatus: {
+  type: String,
+  enum: ['none', 'pending', 'approved', 'rejected'],
+  default: 'none'
+},
+
+appealMessage: {
+  type: String,
+  default: null
+},
+
+  
 
 }, { toJSON: { virtuals: true } });
 

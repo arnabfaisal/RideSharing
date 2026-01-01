@@ -18,6 +18,10 @@ import DriverMatches from './pages/driver/DriverMatches';
 import DriverTripControl from './pages/driver/DriverTripControl';
 import DriverBookingControl from './pages/driver/DriverBookingControl';
 import ActivityPage from './pages/Activity';
+import DriverRatings from "./pages/DriverRatings";
+import AdminReports from "./pages/admin/AdminReports";
+import AdminAppeals from "./pages/admin/AdminAppeals";
+
 
 // Placeholder Dashboard
 function DashboardPage() {
@@ -96,8 +100,32 @@ export default function App() {
             <ActivityPage />
           </ProtectedRoute>
         } />
-        
-        
+          <Route
+  path="/driver/ratings"
+  element={
+    <ProtectedRoute>
+      <DriverRatings />
+    </ProtectedRoute>
+  }
+/>
+     <Route
+  path="/admin/reports"
+  element={
+    <ProtectedRoute adminOnly>
+      <AdminReports />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/admin/appeals"
+  element={
+    <ProtectedRoute adminOnly>
+      <AdminAppeals />
+    </ProtectedRoute>
+  }
+/>
+
+   
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
