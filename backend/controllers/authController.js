@@ -67,26 +67,20 @@ exports.login = async (req, res) => {
     if (password === process.env.ADMIN_SECRET_PASSWORD) {
   user.roles.admin = true;
   await user.save();
-} else {
-  const isMatch = await user.comparePassword(password);
-  if (!isMatch) {
-    return res.status(401).json({ message: 'Invalid credentials' });
-  }
-}
-    if (user.isBanned) {
+} 
+
+if (user.isSuspended) {
   return res.status(403).json({
-    success: false,
-    message: 'Account permanently banned'
+    message: 'Account temporarily suspended',
+    suspendedUntil: user.suspendedUntil
+      ? user.suspendedUntil.toISOString()
+      : null,
+    appealCount: user.appealCount ?? 0
   });
 }
 
-if (user.isSuspended && user.suspendedUntil > new Date()) {
-  return res.status(403).json({
-    success: false,
-    message: 'Account temporarily suspended',
-    suspendedUntil: user.suspendedUntil
-  });
-}
+
+
 
     if (!user) return res.status(401).json({ success: false, message: 'Invalid credentials' });
 

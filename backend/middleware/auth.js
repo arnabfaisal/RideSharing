@@ -53,7 +53,9 @@ if (user.isSuspended && !user.roles?.admin) {
     return res.status(403).json({
       success: false,
       message: 'Account temporarily suspended',
-      suspendedUntil: user.suspendedUntil
+      suspendedUntil: user.suspendedUntil,
+      appealCount: user.appealCount ?? 0,
+      appealStatus: user.appealStatus ??'none'
     });
   }
 

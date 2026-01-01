@@ -49,12 +49,21 @@ export default function Header() {
   </Link>
 )}
 {user?.roles?.admin && (
-  <Link
-    to="/admin/reports"
-    className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
-  >
-    Admin Reports
-  </Link>
+  <>
+    <Link
+      to="/admin/reports"
+      className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
+    >
+      Admin Reports
+    </Link>
+
+    <Link
+      to="/admin/appeals"
+      className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
+    >
+      Appeals
+    </Link>
+  </>
 )}
 
               {/* Book Dropdown - only for passengers */}

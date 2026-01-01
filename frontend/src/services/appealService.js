@@ -1,7 +1,10 @@
-import { post } from './api';
+import { get, post, put } from './api';
 
-export const submitAppeal = (message) =>
-  post('/appeals/submit', { message }, true);
+export const submitAppeal = (email, message) =>
+  post('/api/appeals', { email, message });
 
 export const reviewAppeal = (userId, decision) =>
-  post(`/appeals/review/${userId}`, { decision }, true);
+  put(`/api/appeals/${userId}/review`, { decision }, true);
+
+export const getPendingAppeals = () =>
+  get('/api/appeals', true);

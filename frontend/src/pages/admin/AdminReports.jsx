@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { getAllReports, suspendUser, banUser } from "../../services/adminService";
+import { getAllReports, suspendUser, banUser} from "../../services/adminService";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
-
+import { reviewAppeal } from "../../services/appealService";
 export default function AdminReports() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -179,6 +179,44 @@ const handleSuspend = async (userId) => {
     )}
     
   </div>
+  {r.reportedUser?.appealStatus === 'pending' && (
+  <div className="mt-2">
+    <p className="italic text-sm">
+      "{r.reportedUser.appealMessage}"
+    </p>
+
+<button
+  className="bg-green-600 text-white px-2 py-1 mr-2"
+  onClick={async () => {
+    await reviewAppeal(r.reportedUser._id, 'approved');
+
+    const res = await getAllReports();
+    setReports(res.reports || []);
+
+    alert("Appeal approved and driver unsuspended");
+  }}
+>
+  Approve
+</button>
+
+
+<button
+  className="bg-gray-600 text-white px-2 py-1"
+  onClick={async () => {
+    await reviewAppeal(r.reportedUser._id, 'rejected');
+
+    const res = await getAllReports();
+    setReports(res.reports || []);
+
+    alert("Appeal rejected");
+  }}
+>
+  Reject
+</button>
+
+  </div>
+)}
+
 </td>
 
 

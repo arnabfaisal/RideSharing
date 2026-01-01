@@ -29,16 +29,26 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   };
 
-  const login = async (email, password) => {
-    const res = await post('/api/auth/login', { email, password });
-    if (res.success) {
-      localStorage.setItem('rs_token', res.token);
-      localStorage.setItem('rs_user', JSON.stringify(res.user));
-      setUser(res.user);
-      return res.user;
-    }
-    throw new Error(res.message || 'Login failed');
-  };
+const login = async (email, password) => {
+  try {
+    const data = await post('/api/auth/login', {
+  email,
+  password,
+});
+
+
+    setUser(data.user);
+    localStorage.setItem('rs_token', data.token);
+
+    return data;
+  } catch (err) {
+    // ✅ VERY IMPORTANT: throw BACKEND error as-is
+    throw err;
+  }
+};
+
+
+
 
   const logout = async () => {
     try {

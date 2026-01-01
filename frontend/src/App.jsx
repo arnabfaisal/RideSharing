@@ -20,6 +20,7 @@ import DriverBookingControl from './pages/driver/DriverBookingControl';
 import ActivityPage from './pages/Activity';
 import DriverRatings from "./pages/DriverRatings";
 import AdminReports from "./pages/admin/AdminReports";
+import AdminAppeals from "./pages/admin/AdminAppeals";
 
 
 // Placeholder Dashboard
@@ -115,6 +116,15 @@ export default function App() {
     </ProtectedRoute>
   }
 />
+<Route
+  path="/admin/appeals"
+  element={
+    <ProtectedRoute adminOnly>
+      <AdminAppeals />
+    </ProtectedRoute>
+  }
+/>
+
    
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

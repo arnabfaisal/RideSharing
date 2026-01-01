@@ -30,7 +30,12 @@ if (user.roles.admin) {
   });
 }
 
-user.isBanned = true;
+user.isSuspended = true;
+user.isBanned = false; // safety
+user.suspendedUntil = until;
+user.appealStatus = null;
+user.appealCount = 0;
+
 await user.save();
 
     res.json({
