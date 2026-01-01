@@ -4,6 +4,10 @@ const { haversineDistanceKm } = require('../utils/geo');
 const carpoolService = require('../services/carpoolService');
 
 
+// r4
+const rewardService = require('../services/rewardService');
+// r4
+
 
 const RIDE_BASE = 100; // taka
 const RIDE_PER_KM = 10;
@@ -283,7 +287,14 @@ exports.updateBookingStatus = async (req, res) => {
       if (booking.trip) {
         const Trip = require('../models/Trip');
         const trip = await Trip.findById(booking.trip);
-        if (trip) { trip.status = 'COMPLETED'; await trip.save(); }
+        if (trip) {
+           // r4
+           await rewardService.addPoints(trip.driver, 50, 'Ride Completed');
+           await rewardService.addPoints(trip.passenger, 30, 'Ride Completed');
+           // r4
+
+           trip.status = 'COMPLETED'; 
+           await trip.save(); }
       }
       try { const io = req.app.get('io'); if (io) io.to(`booking_${booking._id}`).emit('bookingCompleted', { bookingId: booking._id }); } catch(e){}
       return res.json({ success: true, message: 'Booking completed' });

@@ -11,6 +11,7 @@ const tripRoutes = require('./routes/tripRoutes');
 const ratingRoutes = require('./routes/ratingRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const rewardRoutes = require('./routes/rewardRoutes');
 const app = express();
 connectDB();
 
@@ -23,6 +24,7 @@ app.use('/api/trips', tripRoutes);
 app.use('/api/ratings', ratingRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/rewards', rewardRoutes);
 
 app.get('/', (req, res) =>
   res.json({ success: true, message: 'RideSharing API' })
