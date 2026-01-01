@@ -18,11 +18,20 @@ router.put('/suspend/:userId', protect, requireAdmin, async (req, res) => {
     const until = new Date();
     until.setDate(until.getDate() + days);
 
-    const user = await User.findByIdAndUpdate(
-      req.params.userId,
-      { isSuspended: true, suspendedUntil: until },
-      { new: true }
-    );
+const user = await User.findById(req.params.userId);
+
+if (!user) {
+  return res.status(404).json({ message: 'User not found' });
+}
+
+if (user.roles.admin) {
+  return res.status(403).json({
+    message: 'Admins cannot be banned'
+  });
+}
+
+user.isBanned = true;
+await user.save();
 
     res.json({
       success: true,

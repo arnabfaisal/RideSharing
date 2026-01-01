@@ -189,5 +189,31 @@ router.post('/:ratingId/respond', protect, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+/**
+ * Passenger views their own ratings
+ * GET /api/ratings/passenger/my
+ */
+router.get('/passenger/my', protect, async (req, res) => {
+  try {
+    if (!req.user.roles.passenger) {
+      return res.status(403).json({
+        message: 'Only passengers can view their ratings'
+      });
+    }
+
+    const ratings = await Rating.find({ passenger: req.user._id })
+      .populate('trip', '_id')
+      .populate('driver', 'name')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      ratings
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+});
 
 module.exports = router;

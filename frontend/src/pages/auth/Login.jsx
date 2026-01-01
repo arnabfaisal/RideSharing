@@ -17,6 +17,8 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/dashboard';
+  const [suspensionInfo, setSuspensionInfo] = useState(null);
+  const [showAppeal, setShowAppeal] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -33,9 +35,18 @@ export default function Login() {
     try {
       await login(formData.email, formData.password);
       navigate(from, { replace: true });
-    } catch (err) {
-      setError(err.message || 'Login failed. Please check your credentials.');
-    } finally {
+    }  catch (err) {
+  const data = err.response?.data;
+
+  // 🚫 Suspended account
+  if (data?.reason === 'suspended') {
+    setSuspensionInfo(data);
+    setError('Account temporarily suspended');
+  } else {
+    setError(data?.message || 'Login failed. Please check your credentials.');
+  }
+}
+ finally {
       setLoading(false);
     }
   };
@@ -55,7 +66,25 @@ export default function Login() {
         <Card>
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && <Alert type="error" message={error} />}
-            
+            {suspensionInfo && suspensionInfo.appealCount < 2 && (
+  <div className="mt-3 text-center">
+    <p className="text-sm text-gray-600 mb-2">
+      Suspended until:{' '}
+      <strong>
+        {new Date(suspensionInfo.suspendedUntil).toLocaleString()}
+      </strong>
+    </p>
+
+    <Button
+      type="button"
+      className="bg-orange-600 hover:bg-orange-700 text-white"
+      onClick={() => setShowAppeal(true)}
+    >
+      Appeal Suspension
+    </Button>
+  </div>
+)}
+
             <Input
               label="Email address"
               name="email"

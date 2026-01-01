@@ -23,6 +23,7 @@ app.use('/api/trips', tripRoutes);
 app.use('/api/ratings', ratingRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/appeals', require('./routes/appealRoutes'));
 
 app.get('/', (req, res) =>
   res.json({ success: true, message: 'RideSharing API' })
