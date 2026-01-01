@@ -480,3 +480,26 @@ Content-Type: application/json
     "color": "White"
   }
 }
+
+###
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Ima",
+  "email": "ima@university.edu",
+  "password": "Admin@470"
+}
+###
+###
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+
+{
+  "name": "Admin User5",
+  "email": "admin5@university.edu",
+  "password": "StrongPass123!",
+  "adminSecret": "Admin@470"
+}
+
