@@ -5,6 +5,13 @@ const Points = require('../models/Points');
 const BlacklistedToken = require('../models/BlacklistedToken');
 const { isUniversityEmail } = require('../utils/validators');
 
+
+
+// r4
+const rewardService = require('../services/rewardService');
+
+// r4
+
 const signToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '2h' });
 };
@@ -106,6 +113,12 @@ if (user.isSuspended && user.suspendedUntil > new Date()) {
     if (!points) {
       await Points.create({ user: user._id, points: 0, level: 'Bronze' });
     }
+
+    // r4
+    // Ensure reward account exists (first login only)
+    await rewardService.createRewardAccount(user._id);
+
+    // r4
 
     res.json({
       success: true,

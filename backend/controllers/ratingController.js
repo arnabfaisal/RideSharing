@@ -1,6 +1,12 @@
 const Rating = require('../models/Rating');
 const Trip = require('../models/Trip');
 
+
+//r4
+const rewardService = require('../services/rewardService');
+//r4 
+
+
 /**
  * Passenger creates rating (after trip completed)
  */
@@ -43,6 +49,10 @@ exports.createRating = async (req, res) => {
       stars,
       comment
     });
+
+    //r4
+    await rewardService.rewardHighRating(trip.driver, stars);
+    // r4
 
     res.status(201).json({
       success: true,
