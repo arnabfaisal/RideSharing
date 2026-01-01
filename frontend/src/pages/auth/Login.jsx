@@ -20,6 +20,11 @@ export default function Login() {
   const from = location.state?.from?.pathname || '/dashboard';
   const [suspensionInfo, setSuspensionInfo] = useState(null);
   const [showAppeal, setShowAppeal] = useState(false);
+  const formatSuspensionDate = (date) => {
+  if (!date) return 'Until further notice';
+  const d = new Date(date);
+  return isNaN(d.getTime()) ? 'Until further notice' : d.toLocaleString();
+};
 
   const handleChange = (e) => {
     setFormData({
@@ -71,25 +76,29 @@ export default function Login() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <Card>
           <form className="space-y-6" onSubmit={handleSubmit}>
-           {error && (
+{error && (
   <Alert
     type="error"
     message={
-      error === 'Account temporarily suspended' && suspensionInfo?.suspendedUntil
-        ? `Your account is suspended until ${new Date(
-            suspensionInfo.suspendedUntil
-          ).toLocaleString()}`
+      error === 'Account temporarily suspended'
+        ? suspensionInfo?.suspendedUntil
+          ? `Your account is suspended until ${formatSuspensionDate(
+              suspensionInfo.suspendedUntil
+            )}`
+          : 'Your account is suspended'
         : error
     }
   />
 )}
 
-            {suspensionInfo && (suspensionInfo.appealCount ?? 0) < 2 && (
+
+
+{suspensionInfo && (suspensionInfo.appealCount ?? 0) < 2 && (
   <div className="mt-3 text-center">
     <p className="text-sm text-gray-600 mb-2">
       Suspended until:{' '}
       <strong>
-        {new Date(suspensionInfo.suspendedUntil).toLocaleString()}
+        {formatSuspensionDate(suspensionInfo.suspendedUntil)}
       </strong>
     </p>
 
@@ -102,6 +111,7 @@ export default function Login() {
     </Button>
   </div>
 )}
+
 
 
             <Input

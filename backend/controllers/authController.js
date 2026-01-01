@@ -61,57 +61,67 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ success: false, message: 'Email and password required' });
+
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Email and password required' });
+    }
 
     const user = await User.findOne({ email });
-    if (password === process.env.ADMIN_SECRET_PASSWORD) {
-  user.roles.admin = true;
-  await user.save();
-} 
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
 
-if (user.isSuspended) {
-  return res.status(403).json({
-    message: 'Account temporarily suspended',
-    suspendedUntil: user.suspendedUntil
-      ? user.suspendedUntil.toISOString()
-      : null,
-    appealCount: user.appealCount ?? 0
-  });
-}
+    // Clear expired suspension
+    if (user.isSuspended && user.suspendedUntil instanceof Date) {
+      if (Date.now() > user.suspendedUntil.getTime()) {
+        user.isSuspended = false;
+        user.suspendedUntil = null;
+        await user.save();
+      }
+    }
 
-
-
-
-    if (!user) return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    // Handle suspension
+    if (user.isSuspended) {
+      return res.status(403).json({
+        success: false,
+        message: 'Account temporarily suspended',
+        suspendedUntil: user.suspendedUntil
+          ? user.suspendedUntil.toISOString()
+          : null,
+        appealCount: user.appealCount || 0
+      });
+    }
 
     const match = await user.comparePassword(password);
-    if (!match) return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    if (!match) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
 
-    // Issue JWT
     const token = signToken(user._id);
 
-    // Ensure wallet & points exist — only on first login per requirements
     const wallet = await Wallet.findOne({ user: user._id });
-    const points = await Points.findOne({ user: user._id });
+    if (!wallet) await Wallet.create({ user: user._id, balance: 0 });
 
-    if (!wallet) {
-      await Wallet.create({ user: user._id, balance: 0 });
-    }
-    if (!points) {
-      await Points.create({ user: user._id, points: 0, level: 'Bronze' });
-    }
+    const points = await Points.findOne({ user: user._id });
+    if (!points) await Points.create({ user: user._id, points: 0, level: 'Bronze' });
 
     res.json({
       success: true,
       token,
       expiresIn: process.env.JWT_EXPIRES_IN || '2h',
-      user: { id: user._id, name: user.name, email: user.email, roles: user.roles }
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        roles: user.roles
+      }
     });
   } catch (err) {
-    console.error(err);
+    console.error('LOGIN CRASH:', err);
     res.status(500).json({ success: false, message: 'Login error', error: err.message });
   }
 };
+
 
 exports.logout = async (req, res) => {
   try {
