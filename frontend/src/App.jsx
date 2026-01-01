@@ -21,6 +21,7 @@ import ActivityPage from './pages/Activity';
 import DriverRatings from "./pages/DriverRatings";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminAppeals from "./pages/admin/AdminAppeals";
+import RewardsDashboard from './pages/RewardDashboard';
 
 
 // Placeholder Dashboard
@@ -124,6 +125,12 @@ export default function App() {
     </ProtectedRoute>
   }
 />
+
+<Route path="/rewards" element={
+          <ProtectedRoute>
+            <RewardsDashboard />
+          </ProtectedRoute>
+        } />
 
    
         {/* Fallback */}

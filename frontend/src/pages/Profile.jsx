@@ -38,7 +38,7 @@ export default function Profile() {
 
         // R4: reward points
         try {
-          const rewardsRes = await get(`/api/rewards/dashboard/${res.data._id}`, true);
+          const rewardsRes = await get(`/api/rewards/dashboard`, true);
           setRewardPoints(rewardsRes.account?.points || 0);
         } catch (err) {
           console.error('Failed to load rewards:', err);

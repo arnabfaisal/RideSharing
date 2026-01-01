@@ -24,7 +24,7 @@ export default function Dashboard() {
         const itemsSent = bookings.filter(b => b.serviceType === 'item').length;
         let rewardPoints = user?.rewardPoints || 0;
         try {
-          const res = await get(`/api/rewards/dashboard/${user._id}`, true);
+            const res = await get(`/api/rewards/dashboard`, true);
           rewardPoints = res.account?.points || rewardPoints;
         } catch (e) { console.error('Failed to load reward points', e); }
         setTotals({ totalRides: rides, itemsSent, rewardPoints });
@@ -66,7 +66,7 @@ export default function Dashboard() {
       description: 'View your ride and delivery history',
       icon: '📊',
       color: 'orange',
-      path: '/activity-history',
+      path: '/activity',
       features: ['Past rides', 'Item deliveries', 'Ratings']
     },
     {
