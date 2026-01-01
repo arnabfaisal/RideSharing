@@ -26,7 +26,7 @@ export default function RewardsDashboard() {
 
   const loadRewardsData = async () => {
     try {
-      const res = await get(`/api/rewards/dashboard/${user._id}`, true);
+      const res = await get(`/api/rewards/dashboard`, true);
       setAccount(res.account);
       setRewards(res.rewards || []);
       setError('');
@@ -44,7 +44,6 @@ export default function RewardsDashboard() {
       setSuccess('');
       
       const res = await post('/api/rewards/redeem', {
-        userId: user._id,
         rewardId
       }, true);
 
