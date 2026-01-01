@@ -38,22 +38,26 @@ exports.protect = async (req, res, next) => {
        =============================== */
 
     // Permanent ban
-    if (user.isBanned) {
-      return res.status(403).json({
-        success: false,
-        message: 'Account permanently banned'
-      });
-    }
+ // Permanent ban (admins are immune)
+if (user.isBanned && !user.roles?.admin) {
+  return res.status(403).json({
+    success: false,
+    message: 'Account permanently banned'
+  });
+}
 
-    // Temporary suspension
-    if (user.isSuspended) {
-      if (user.suspendedUntil && user.suspendedUntil > new Date()) {
-        return res.status(403).json({
-          success: false,
-          message: 'Account temporarily suspended',
-          suspendedUntil: user.suspendedUntil
-        });
-      }
+
+// Temporary suspension (admins are immune)
+if (user.isSuspended && !user.roles?.admin) {
+  if (user.suspendedUntil && user.suspendedUntil > new Date()) {
+    return res.status(403).json({
+      success: false,
+      message: 'Account temporarily suspended',
+      suspendedUntil: user.suspendedUntil,
+      appealCount: user.appealCount ?? 0,
+      appealStatus: user.appealStatus ??'none'
+    });
+  }
 
       // Auto-unsuspend
       if (user.suspendedUntil && user.suspendedUntil <= new Date()) {

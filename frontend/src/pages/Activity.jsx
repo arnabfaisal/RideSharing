@@ -4,12 +4,30 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { carpoolService } from '../services/carpoolService';
 import socket, { joinBooking, leaveBooking, joinGroup, leaveGroup } from '../services/socket';
+import RateDriverModal from "../components/ratings/RateDriverModal";
+import { getMyPassengerRatings } from "../services/ratingService";
+import ReportDriverModal from "../components/reports/ReportDriverModal";
+import { getMyReports } from "../services/reportService";
+import AppealModal from '../components/appeals/AppealModal';
+
 
 export default function ActivityPage(){
   const { user } = useAuth();
   const [data, setData] = useState({ bookings: [], trips: [] });
   const [loading, setLoading] = useState(true);
   const currentUserId = user?.id || user?._id || null;
+  const [selectedTrip, setSelectedTrip] = useState(null);
+  const [ratings, setRatings] = useState([]);
+  const getRatingForTrip = (tripId) =>
+    ratings.find(r => r.trip?._id === tripId);
+  const [reports, setReports] = useState([]);   // ✅ REQUIRED
+  const [reportTrip, setReportTrip] = useState(null); // ✅ REQUIRED
+  const [showAppeal, setShowAppeal] = useState(false);
+
+
+  const getReportForTrip = (tripId) =>
+  reports.find(r => r.trip?._id === tripId);
+
 
   useEffect(()=>{
     let mounted = true;
@@ -47,6 +65,36 @@ export default function ActivityPage(){
       } catch (e) { /* ignore */ }
     };
   },[]);
+  useEffect(() => {
+  const fetchReports = async () => {
+    try {
+      const res = await getMyReports();
+      setReports(res.reports || []);
+    } catch (e) {
+      console.error("Failed to load reports", e);
+    }
+  };
+
+  if (user?.roles?.passenger) {
+    fetchReports();
+  }
+}, [user]);
+
+  useEffect(() => {
+  const fetchRatings = async () => {
+    try {
+      const res = await getMyPassengerRatings();
+      setRatings(res.ratings || []);
+    } catch (e) {
+      console.error("Failed to load ratings", e);
+    }
+  };
+
+  if (user?.roles?.passenger) {
+    fetchRatings();
+  }
+}, [user]);
+
 
   useEffect(() => {
     const onBookingAccepted = (data) => {
@@ -127,6 +175,100 @@ export default function ActivityPage(){
                       <div className="text-sm">{t.tripType} — {t.status}</div>
                       <div className="text-xs text-gray-500">Fare: {t.fareAmount}</div>
                       <div className="text-xs text-gray-500">Created: {new Date(t.createdAt).toLocaleString()}</div>
+                       {/* Passenger: Rate Driver */}
+                     {/* Passenger: Rate Driver / Rated */}
+{!user?.roles?.driver && t.status === "COMPLETED" && (() => {
+  const rating = getRatingForTrip(t._id);
+
+  if (!rating) {
+    return (
+      <div className="mt-2">
+        <button
+          className="px-3 py-1 bg-blue-600 text-white rounded"
+          onClick={() => setSelectedTrip(t)}
+        >
+          Rate Driver
+        </button>
+      </div>
+    );
+  }
+{/* DRIVER SUSPENSION APPEAL */}
+{user?.roles?.driver && user?.isSuspended && user?.appealStatus !== 'pending' && (
+  <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded">
+    <p className="text-sm text-yellow-800 mb-2">
+      Your account is suspended.
+    </p>
+    <button
+      className="bg-orange-600 text-white px-3 py-1 rounded"
+      onClick={() => setShowAppeal(true)}
+    >
+      Appeal Suspension
+    </button>
+  </div>
+)}
+
+
+  return (
+    <div className="mt-2 text-sm">
+      <div className="text-yellow-500">
+        {"★".repeat(rating.stars)}
+      </div>
+
+      {rating.comment && (
+        <div className="text-gray-600 italic">
+          “{rating.comment}”
+        </div>
+      )}
+
+      <div className="text-green-600 font-medium mt-1">
+        Rated ✔
+      </div>
+
+      {rating.driverResponse && (
+        <div className="mt-2 p-2 bg-gray-100 border-l-4 border-blue-500">
+          <strong>Driver response:</strong>
+          <div>{rating.driverResponse}</div>
+        </div>
+      )}
+    </div>
+  );
+})()}
+{/* Passenger: Report Driver / Reported */}
+{user?.roles?.passenger && t.status === "COMPLETED" && (() => {
+  const report = getReportForTrip(t._id);
+
+  // NOT reported yet → show button
+  if (!report) {
+    return (
+      <div className="mt-2">
+        <button
+          className="px-3 py-1 bg-red-600 text-white rounded"
+          onClick={() => setReportTrip(t)}
+        >
+          Report Driver
+        </button>
+      </div>
+    );
+  }
+
+  // ALREADY reported → badge
+  return (
+    <div className="mt-2 text-sm text-red-600 font-medium">
+      Reported ✔
+      <div className="text-gray-500 italic mt-1">
+        Category: {report.category}
+      </div>
+      {report.description && (
+        <div className="text-gray-500 italic">
+          “{report.description}”
+        </div>
+      )}
+    </div>
+  );
+})()}
+
+
+
                       {user?.roles?.driver && t.driver && t.driver.toString() === currentUserId && t.status !== 'COMPLETED' && (
                         <div className="mt-2">
                           <button onClick={async ()=>{
@@ -154,6 +296,34 @@ export default function ActivityPage(){
           )}
         </div>
       </div>
+            {/* Rating Modal */}
+      {selectedTrip && (
+        <RateDriverModal
+          trip={selectedTrip}
+          onClose={() => setSelectedTrip(null)}
+          onSuccess={async () => {
+            const d = await carpoolService.getMyActivity();
+            setData(d);
+          }}
+        />
+      )}
+{reportTrip && (
+  <ReportDriverModal
+    trip={reportTrip}
+    onClose={() => setReportTrip(null)}
+    onSuccess={async () => {
+      const res = await getMyReports();
+      setReports(res.reports || []);
+      setReportTrip(null);
+    }}
+  />
+)}
+{showAppeal && (
+  <AppealModal onClose={() => setShowAppeal(false)} />
+)}
+
+
+
       <Footer />
     </div>
   );

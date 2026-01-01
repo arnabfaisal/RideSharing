@@ -20,7 +20,7 @@ const reportSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['Late', 'Rude Behavior', 'No Show'],
+      enum: ['Late', 'Rude Behavior', 'No Show' , 'Other'],
       required: true
     },
     description: String,
