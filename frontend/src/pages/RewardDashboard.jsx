@@ -26,6 +26,7 @@ export default function RewardsDashboard() {
 
   const loadRewardsData = async () => {
     try {
+      setLoading(true);
       const res = await get(`/api/rewards/dashboard`, true);
       setAccount(res.account);
       setRewards(res.rewards || []);
@@ -51,7 +52,7 @@ export default function RewardsDashboard() {
         setError('You do not have enough points to redeem this reward');
       } else if (res.result) {
         setSuccess(`Successfully redeemed: ${res.result.title}!`);
-        await loadRewardsData();
+        await loadRewardsData();  // Refresh the dashboard
       }
     } catch (err) {
       setError(err.message || 'Redemption failed');
@@ -308,7 +309,7 @@ export default function RewardsDashboard() {
                     variant={account?.points >= reward.pointsRequired ? 'primary' : 'outline'}
                     className="w-full"
                     onClick={() => handleRedeem(reward._id)}
-                    disabled={account?.points < reward.pointsRequired || redeeming === reward._id}
+                    disabled={account?.points < reward.pointsRequired || redeeming === reward._id || loading}
                   >
                     {redeeming === reward._id ? (
                       <span className="flex items-center justify-center">
